@@ -269,30 +269,69 @@ def parse_excel_insurers(file: BinaryIO) -> tuple[list[dict], list[dict]]:
     return validated, errors
 
 
-def generate_excel_export(insurers: list[dict]) -> bytes:
+def generate_excel_export(insurers: list) -> BytesIO:
     """
-    Generate Excel file from insurer data.
+    Generate Excel file from insurer list matching original import format.
+
+    Creates an Excel file with column names that match the expected
+    import format for round-trip compatibility:
+    - ANS Code, Insurer Name, Company Registration Number (CNPJ)
+    - Product (Category), MARKET MASTER, Status, Enabled, Search Terms
 
     Args:
-        insurers: List of insurer dictionaries
+        insurers: List of Insurer ORM objects or dictionaries
 
     Returns:
-        Excel file as bytes
+        BytesIO buffer ready for streaming response
     """
-    df = pd.DataFrame(insurers)
+    # Column mapping to match expected export format
+    # Uses same names as original ByCat3.xlsx for compatibility
+    data = []
+    for ins in insurers:
+        # Handle both ORM objects and dicts
+        if hasattr(ins, 'ans_code'):
+            # ORM object
+            data.append({
+                'ANS Code': ins.ans_code,
+                'Insurer Name': ins.name,
+                'Company Registration Number': ins.cnpj or '',
+                'Product': ins.category,
+                'MARKET MASTER': ins.market_master or '',
+                'Status': ins.status or '',
+                'Enabled': 'Yes' if ins.enabled else 'No',
+                'Search Terms': ins.search_terms or ''
+            })
+        else:
+            # Dictionary
+            data.append({
+                'ANS Code': ins.get('ans_code', ''),
+                'Insurer Name': ins.get('name', ''),
+                'Company Registration Number': ins.get('cnpj', '') or '',
+                'Product': ins.get('category', ''),
+                'MARKET MASTER': ins.get('market_master', '') or '',
+                'Status': ins.get('status', '') or '',
+                'Enabled': 'Yes' if ins.get('enabled', True) else 'No',
+                'Search Terms': ins.get('search_terms', '') or ''
+            })
 
-    # Reorder columns for export
-    column_order = [
-        'ans_code', 'name', 'cnpj', 'category', 'market_master',
-        'status', 'enabled', 'search_terms', 'created_at', 'updated_at'
-    ]
-    # Keep only columns that exist
-    columns = [c for c in column_order if c in df.columns]
-    df = df[columns]
+    df = pd.DataFrame(data)
 
-    # Write to bytes
+    # Write to bytes buffer
     output = BytesIO()
-    df.to_excel(output, index=False, engine='openpyxl')
-    output.seek(0)
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Insurers')
 
-    return output.read()
+        # Auto-adjust column widths for better readability
+        worksheet = writer.sheets['Insurers']
+        for idx, col in enumerate(df.columns):
+            # Calculate max length in column (including header)
+            max_length = max(
+                df[col].astype(str).map(len).max() if len(df) > 0 else 0,
+                len(col)
+            ) + 2
+            # Cap at 50 characters to prevent excessively wide columns
+            col_letter = chr(65 + idx) if idx < 26 else f"{chr(64 + idx // 26)}{chr(65 + idx % 26)}"
+            worksheet.column_dimensions[col_letter].width = min(max_length, 50)
+
+    output.seek(0)
+    return output
