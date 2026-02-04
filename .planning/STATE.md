@@ -8,17 +8,17 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 Phase: 3 of 8 (News Collection Scale)
-Plan: 1 of 6
+Plan: 3 of 6
 Status: In progress
-Progress: [██░░░░░░░░] 27% (2.17/8 phases complete)
-Last activity: 2026-02-04 - Completed 03-01-PLAN.md
+Progress: [███░░░░░░░] 30% (2.5/8 phases complete)
+Last activity: 2026-02-04 - Completed 03-03-PLAN.md
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: ~4.9 minutes
-- Total execution time: ~1.17 hours
+- Total plans completed: 16
+- Average duration: ~4.7 minutes
+- Total execution time: ~1.28 hours
 
 **By Phase:**
 
@@ -26,11 +26,11 @@ Last activity: 2026-02-04 - Completed 03-01-PLAN.md
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~26 min | ~6.5 min |
 | 02-vertical-slice-validation | 9 | ~42 min | ~4.7 min |
-| 03-news-collection-scale | 1 | ~2 min | ~2 min |
+| 03-news-collection-scale | 3 | ~10 min | ~3.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-06 (~3.3 min), 02-07 (~9 min), 02-08 (~2 min), 02-09 (~20 min), 03-01 (~2 min)
-- Trend: Source abstraction plan was fast due to focused refactoring scope
+- Last 5 plans: 02-08 (~2 min), 02-09 (~20 min), 03-01 (~2 min), 03-02 (~4 min), 03-03 (~4 min)
+- Trend: Wave 2 plans (03-02, 03-03) executed in parallel for news sources
 
 *Updated after each plan completion*
 
@@ -85,6 +85,10 @@ Recent decisions affecting current work:
 - SourceRegistry uses class variables for global singleton pattern (03-01)
 - Auto-registration on module import for simple source discovery (03-01)
 - scraper.py delegates to GoogleNewsSource for backward compatibility (03-01)
+- cheerio crawler for Valor (fast HTML parsing, no anti-bot needed) (03-03)
+- playwright:firefox for CQCS (anti-bot compatibility) (03-03)
+- max_concurrency=2 for CQCS to avoid rate limiting (03-03)
+- Over-fetch then filter pattern for website crawlers (03-03)
 
 ### Pending Todos
 
@@ -168,23 +172,23 @@ None yet.
 
 ## Phase 3 Progress - IN PROGRESS
 
-**Plans complete: 1 of 6**
+**Plans complete: 3 of 6**
 
 | Plan | Name | Status |
 |------|------|--------|
 | 03-01 | Source Abstraction | DONE |
-| 03-02 | RSS Sources | PENDING |
-| 03-03 | Crawler Sources | PENDING |
+| 03-02 | RSS Sources | DONE |
+| 03-03 | Crawler Sources | DONE |
 | 03-04 | Batch Processor | PENDING |
 | 03-05 | Relevance Scorer | PENDING |
 | 03-06 | Integration | PENDING |
 
-**Next:** Execute 03-02 (RSS Sources)
+**Next:** Execute 03-04 (Batch Processor) and 03-05 (Relevance Scorer) in Wave 3
 
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03-01-PLAN.md
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
 
 ### What's Available Now
@@ -213,6 +217,13 @@ From Phase 3 (in progress):
 - `app.services.sources.SourceRegistry` - Source discovery and management (03-01)
 - `app.services.sources.ScrapedNewsItem` - Unified news item dataclass (03-01)
 - `app.services.sources.GoogleNewsSource` - Google News implementation (03-01)
+- `app.services.sources.RSSNewsSource` - Base RSS source class (03-02)
+- `app.services.sources.InfoMoneySource` - InfoMoney RSS source (03-02)
+- `app.services.sources.EstadaoSource` - Estadao RSS source (03-02)
+- `app.services.sources.ANSSource` - ANS gov.br RSS source (03-02)
+- `app.services.sources.ValorSource` - Valor Economico crawler (03-03)
+- `app.services.sources.CQCSSource` - CQCS crawler (03-03)
+- `app.config.batch_size, batch_delay_seconds, max_concurrent_sources` - Batch config (03-03)
 - `app.services.classifier.ClassificationService` - Azure OpenAI classification (02-04)
 - `app.schemas.classification.*` - NewsClassification, InsurerClassification (02-04)
 - `app.services.emailer.GraphEmailService` - Microsoft Graph email sender (02-05)
