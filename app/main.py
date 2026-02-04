@@ -13,7 +13,7 @@ from fastapi.responses import RedirectResponse
 from app.database import Base, engine
 # Import models to register them with Base.metadata before create_all
 from app.models import insurer  # noqa: F401
-from app.routers import insurers
+from app.routers import insurers, import_export
 
 # Load environment variables from .env file
 load_dotenv()
@@ -43,6 +43,7 @@ app = FastAPI(
 
 # Register API routers
 app.include_router(insurers.router)
+app.include_router(import_export.router)
 
 
 @app.get("/api/health", tags=["Health"])
