@@ -13,6 +13,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Index
 )
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -40,6 +41,9 @@ class Insurer(Base):
     search_terms = Column(String(500), nullable=True)  # Custom search terms per DATA-03
     created_at = Column(DateTime, default=datetime.utcnow, nullable=True)
     updated_at = Column(DateTime, onupdate=datetime.utcnow, nullable=True)
+
+    # Relationships
+    news_items = relationship("NewsItem", back_populates="insurer")
 
     def __repr__(self) -> str:
         return f"<Insurer(id={self.id}, ans_code='{self.ans_code}', name='{self.name}')>"
