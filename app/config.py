@@ -62,6 +62,11 @@ class Settings(BaseSettings):
     source_timeout_valor: int = 120  # Valor Economico
     source_timeout_cqcs: int = 120  # CQCS
 
+    # Relevance scoring settings (NEWS-10)
+    use_ai_relevance_scoring: bool = True  # Enable AI relevance pre-filter
+    relevance_keyword_threshold: int = 20  # Items below this skip AI scoring
+    relevance_ai_batch_size: int = 10  # Items per AI scoring request
+
     def get_report_recipients(self, category: str) -> list[str]:
         """Get list of recipients for a category."""
         recipients_map = {
