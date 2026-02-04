@@ -8,17 +8,17 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 Phase: 6 of 8 (Delivery & Critical Alerts)
-Plan: 2 of 5
+Plan: 3 of 5
 Status: In Progress
-Progress: [██████░░░░] 68.6% (24/35 plans complete)
-Last activity: 2026-02-04 - Completed 06-02 PDF Generation Service
+Progress: [███████░░░] 71.4% (25/35 plans complete)
+Last activity: 2026-02-04 - Completed 06-03 Email Enhancements
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
+- Total plans completed: 25
 - Average duration: ~4.6 minutes
-- Total execution time: ~1.85 hours
+- Total execution time: ~1.9 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Last activity: 2026-02-04 - Completed 06-02 PDF Generation Service
 | 03-news-collection-scale | 6 | ~32 min | ~5.3 min |
 | 04-ai-classification-pipeline | 2 | ~4 min | ~2.0 min |
 | 05-professional-reporting | 5 | ~22 min | ~4.4 min |
-| 06-delivery-critical-alerts | 2 | ~5 min | ~2.5 min |
+| 06-delivery-critical-alerts | 3 | ~9 min | ~3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-04 (~2 min), 05-05 (~14 min), 06-01 (~2 min), 06-02 (~3 min)
-- Trend: Fast implementation, GTK3 dependency limits local testing
+- Last 5 plans: 05-05 (~14 min), 06-01 (~2 min), 06-02 (~3 min), 06-03 (~4 min)
+- Trend: Fast implementation, Phase 6 averaging 3 min/plan
 
 *Updated after each plan completion*
 
@@ -124,6 +124,10 @@ Recent decisions affecting current work:
 - 3MB PDF size limit for email attachments (base64 inflates ~33%) (06-02)
 - FontConfiguration for Windows font rendering compatibility (06-02)
 - Tests skip automatically when GTK3 runtime unavailable (06-02)
+- 3MB attachment limit for Graph API (base64 inflates ~33% to stay under 4MB) (06-03)
+- Lazy import of PDFGeneratorService for graceful GTK3 fallback (06-03)
+- fileAttachment @odata.type annotation required for Graph API attachments (06-03)
+- 60-second timeout for attachment uploads vs 30s for plain email (06-03)
 
 ### Pending Todos
 
@@ -245,24 +249,24 @@ None yet.
 - REPT-12: File-based archival system (05-03)
 - REPT-13: Report archive browsing API (05-05)
 
-**Next:** 06-03 Email Enhancements
+**Next:** 06-04 Critical Alerts
 
 ## Phase 6 Progress - IN PROGRESS
 
-**Plans complete: 2 of 5**
+**Plans complete: 3 of 5**
 
 | Plan | Name | Status |
 |------|------|--------|
 | 06-01 | Delivery Schemas | DONE |
 | 06-02 | PDF Generation | DONE |
-| 06-03 | Email Enhancements | pending |
+| 06-03 | Email Enhancements | DONE |
 | 06-04 | Critical Alerts | pending |
 | 06-05 | Delivery Integration | pending |
 
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 06-02 PDF Generation Service
+Stopped at: Completed 06-03 Email Enhancements
 Resume file: None
 
 ### What's Available Now
@@ -351,6 +355,8 @@ From Phase 6 (in progress):
 - `PDFGeneratorService.generate_pdf()` - Returns (pdf_bytes, size) tuple (06-02)
 - `PDFGeneratorService.MAX_PDF_SIZE` - 3MB limit for email attachments (06-02)
 - `tests/test_pdf_generator.py` - 10 tests, skip if GTK3 unavailable (06-02)
+- `GraphEmailService.send_email_with_attachment()` - Base64 attachment support (06-03)
+- `GraphEmailService.send_report_email_with_pdf()` - PDF generation + email integration (06-03)
 
 ---
 *Initialized: 2026-02-04*
