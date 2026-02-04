@@ -7,11 +7,11 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 **Current focus:** Phase 5 - Professional Reporting
 
 ## Current Position
-Phase: 4 of 8 (AI Classification Pipeline)
-Plan: 2 of 2
-Status: Complete
-Progress: [█████░░░░░] 50% (4/8 phases complete)
-Last activity: 2026-02-04 - Completed Phase 4
+Phase: 5 of 8 (Professional Reporting)
+Plan: 3 of 5
+Status: In Progress
+Progress: [█████░░░░░] 50% (4/8 phases complete, 3/5 plans in phase 5)
+Last activity: 2026-02-04 - Completed 05-03 Report Archiver
 
 ## Performance Metrics
 
@@ -30,8 +30,8 @@ Last activity: 2026-02-04 - Completed Phase 4
 | 04-ai-classification-pipeline | 2 | ~4 min | ~2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (~4 min), 03-04 (~4 min), 03-05 (~3 min), 04-01 (~2 min), 04-02 (~2 min)
-- Trend: Efficient schema enhancements, testing, and migrations
+- Last 5 plans: 04-01 (~2 min), 04-02 (~2 min), 05-01 (~2 min), 05-02 (~2 min), 05-03 (~2 min)
+- Trend: Efficient reporting and archival services
 
 *Updated after each plan completion*
 
@@ -105,6 +105,9 @@ Recent decisions affecting current work:
 - Standalone migration script for database schema changes (no alembic dependency) (04-02)
 - ASCII markers instead of Unicode checkmarks for Windows console compatibility (04-02)
 - Comprehensive test coverage (23 tests) for classification service validation (04-02)
+- Date hierarchy YYYY/MM/DD for intuitive report browsing and efficient pruning (05-03)
+- Metadata.json per day avoids reading individual report files for browsing (05-03)
+- Filename format: category_HH-MM-SS.html for uniqueness and sorting (05-03)
 
 ### Pending Todos
 
@@ -243,10 +246,22 @@ None yet.
 
 **Next:** Phase 5 - Professional Reporting
 
+## Phase 5 Progress - IN PROGRESS
+
+**Plans complete: 3 of 5**
+
+| Plan | Name | Status |
+|------|------|--------|
+| 05-01 | Professional Template | DONE |
+| 05-02 | Template Enhancement | DONE |
+| 05-03 | Report Archiver | DONE |
+| 05-04 | Report Endpoints | TODO |
+| 05-05 | Integration | TODO |
+
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed Phase 4 - AI Classification Pipeline
+Stopped at: Completed 05-03 Report Archiver
 Resume file: None
 
 ### What's Available Now
@@ -309,6 +324,11 @@ From Phase 3 (complete):
 - `deploy/run_brasilintel.bat` - Batch execution template (02-09)
 - Enhanced `/api/health` endpoint with dependency validation (02-09)
 - Database tables: insurers, runs, news_items with relationships (02-01)
+
+From Phase 5 (in progress):
+- `app.services.report_archiver.ReportArchiver` - File-based report archival (05-03)
+- `app/storage/` - Archive storage root directory (05-03)
+- `app/storage/reports/YYYY/MM/DD/` - Date-based report hierarchy (05-03)
 
 ---
 *Initialized: 2026-02-04*
