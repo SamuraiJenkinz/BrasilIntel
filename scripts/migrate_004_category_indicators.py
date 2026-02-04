@@ -33,7 +33,7 @@ def migrate():
         columns = [col[1] for col in cursor.fetchall()]
 
         if 'category_indicators' in columns:
-            print("✓ category_indicators column already exists in news_items table")
+            print("[OK] category_indicators column already exists in news_items table")
             conn.close()
             return 0
 
@@ -41,13 +41,13 @@ def migrate():
         print("Adding category_indicators column to news_items table...")
         cursor.execute("ALTER TABLE news_items ADD COLUMN category_indicators VARCHAR(500)")
         conn.commit()
-        print("✓ Successfully added category_indicators column to news_items table")
+        print("[OK] Successfully added category_indicators column to news_items table")
 
         conn.close()
         return 0
 
     except Exception as e:
-        print(f"✗ Migration failed: {e}")
+        print(f"[ERROR] Migration failed: {e}")
         return 1
 
 
