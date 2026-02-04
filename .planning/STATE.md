@@ -8,17 +8,17 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 Phase: 6 of 8 (Delivery & Critical Alerts)
-Plan: 1 of 4
+Plan: 2 of 5
 Status: In Progress
-Progress: [██████░░░░] 65.6% (23/35 plans complete)
-Last activity: 2026-02-04 - Completed 06-01 Delivery Schemas and Configuration
+Progress: [██████░░░░] 68.6% (24/35 plans complete)
+Last activity: 2026-02-04 - Completed 06-02 PDF Generation Service
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
-- Average duration: ~4.7 minutes
-- Total execution time: ~1.8 hours
+- Total plans completed: 24
+- Average duration: ~4.6 minutes
+- Total execution time: ~1.85 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Last activity: 2026-02-04 - Completed 06-01 Delivery Schemas and Configuration
 | 03-news-collection-scale | 6 | ~32 min | ~5.3 min |
 | 04-ai-classification-pipeline | 2 | ~4 min | ~2.0 min |
 | 05-professional-reporting | 5 | ~22 min | ~4.4 min |
-| 06-delivery-critical-alerts | 1 | ~2 min | ~2.0 min |
+| 06-delivery-critical-alerts | 2 | ~5 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-03 (~2 min), 05-04 (~2 min), 05-05 (~14 min), 06-01 (~2 min)
-- Trend: Fast schema/config changes, checkpoint verification adds time
+- Last 5 plans: 05-04 (~2 min), 05-05 (~14 min), 06-01 (~2 min), 06-02 (~3 min)
+- Trend: Fast implementation, GTK3 dependency limits local testing
 
 *Updated after each plan completion*
 
@@ -120,6 +120,10 @@ Recent decisions affecting current work:
 - DeliveryStatus uses lowercase values for consistency with other enums (06-01)
 - _parse_recipient_list as private helper for DRY parsing (06-01)
 - Nullable delivery columns with defaults for SQLite auto-migration (06-01)
+- asyncio.to_thread() for non-blocking PDF generation (06-02)
+- 3MB PDF size limit for email attachments (base64 inflates ~33%) (06-02)
+- FontConfiguration for Windows font rendering compatibility (06-02)
+- Tests skip automatically when GTK3 runtime unavailable (06-02)
 
 ### Pending Todos
 
@@ -241,23 +245,24 @@ None yet.
 - REPT-12: File-based archival system (05-03)
 - REPT-13: Report archive browsing API (05-05)
 
-**Next:** 06-02 PDF Generation
+**Next:** 06-03 Email Enhancements
 
 ## Phase 6 Progress - IN PROGRESS
 
-**Plans complete: 1 of 4**
+**Plans complete: 2 of 5**
 
 | Plan | Name | Status |
 |------|------|--------|
 | 06-01 | Delivery Schemas | DONE |
-| 06-02 | PDF Generation | pending |
-| 06-03 | Critical Alerts | pending |
-| 06-04 | Delivery Integration | pending |
+| 06-02 | PDF Generation | DONE |
+| 06-03 | Email Enhancements | pending |
+| 06-04 | Critical Alerts | pending |
+| 06-05 | Delivery Integration | pending |
 
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 06-01 Delivery Schemas and Configuration
+Stopped at: Completed 06-02 PDF Generation Service
 Resume file: None
 
 ### What's Available Now
@@ -342,6 +347,10 @@ From Phase 6 (in progress):
 - `app.config.Settings.get_email_recipients()` - Returns EmailRecipients for category (06-01)
 - `app.config.Settings` CC/BCC fields: report_recipients_*_cc, report_recipients_*_bcc (06-01)
 - `app.models.run.Run` delivery tracking: email_status, pdf_generated, critical_alert_sent (06-01)
+- `app.services.pdf_generator.PDFGeneratorService` - Async PDF generation (06-02)
+- `PDFGeneratorService.generate_pdf()` - Returns (pdf_bytes, size) tuple (06-02)
+- `PDFGeneratorService.MAX_PDF_SIZE` - 3MB limit for email attachments (06-02)
+- `tests/test_pdf_generator.py` - 10 tests, skip if GTK3 unavailable (06-02)
 
 ---
 *Initialized: 2026-02-04*
