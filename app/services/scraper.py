@@ -4,39 +4,20 @@ Apify-based web scraper service for Google News.
 
 Uses the lhotanova/google-news-scraper actor to fetch news
 about Brazilian insurers with proper rate limiting.
+
+Note: This module now delegates to the sources module for the
+actual implementation. It's kept for backward compatibility with
+existing code that imports from here.
 """
 import logging
 from typing import Any
-from datetime import datetime
 
-from apify_client import ApifyClient
-
-from app.config import get_settings
+from app.services.sources import ScrapedNewsItem, GoogleNewsSource
 
 logger = logging.getLogger(__name__)
 
-
-class ScrapedNewsItem:
-    """Represents a scraped news item from Google News."""
-
-    def __init__(
-        self,
-        title: str,
-        description: str | None = None,
-        url: str | None = None,
-        source: str | None = None,
-        published_at: datetime | None = None,
-        raw_data: dict | None = None,
-    ):
-        self.title = title
-        self.description = description
-        self.url = url
-        self.source = source
-        self.published_at = published_at
-        self.raw_data = raw_data or {}
-
-    def __repr__(self) -> str:
-        return f"ScrapedNewsItem(title={self.title[:50]}..., source={self.source})"
+# Re-export ScrapedNewsItem for backward compatibility
+__all__ = ["ApifyScraperService", "ScrapedNewsItem"]
 
 
 class ApifyScraperService:
@@ -45,18 +26,18 @@ class ApifyScraperService:
 
     Wraps the Apify client and provides methods for searching
     news about specific insurers using their name and ANS code.
+
+    Note: This class now delegates to GoogleNewsSource internally
+    while maintaining the same public interface for backward
+    compatibility.
     """
 
     # Google News scraper actor from Apify Store
     GOOGLE_NEWS_ACTOR = "lhotanova/google-news-scraper"
 
     def __init__(self):
-        settings = get_settings()
-        if not settings.is_apify_configured():
-            logger.warning("Apify token not configured - scraping will fail")
-            self.client = None
-        else:
-            self.client = ApifyClient(settings.apify_token)
+        """Initialize the service with GoogleNewsSource."""
+        self._google_source = GoogleNewsSource()
 
     def search_google_news(
         self,
@@ -80,37 +61,31 @@ class ApifyScraperService:
 
         Returns:
             List of ScrapedNewsItem objects
+
+        Note: language, country, time_filter, and timeout_secs are
+        currently using default values in the underlying source.
+        Future versions may support passing these through.
         """
-        if not self.client:
-            logger.error("Apify client not initialized - check APIFY_TOKEN")
-            return []
-
-        run_input = {
-            "queries": query,
-            "language": language,
-            "country": country,
-            "maxItems": max_results,
-            "timeRange": time_filter,
-        }
-
-        logger.info(f"Starting Google News search: {query[:100]}...")
-
+        # Run the async method synchronously for backward compatibility
+        import asyncio
         try:
-            # Run actor and wait for completion
-            run = self.client.actor(self.GOOGLE_NEWS_ACTOR).call(
-                run_input=run_input,
-                timeout_secs=timeout_secs,
-            )
-
-            # Retrieve results from default dataset
-            items = list(self.client.dataset(run["defaultDatasetId"]).iterate_items())
-            logger.info(f"Found {len(items)} news items for query")
-
-            return self._parse_results(items)
-
-        except Exception as e:
-            logger.error(f"Apify scraping failed: {e}")
-            return []
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If already in async context, use thread pool
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(
+                        asyncio.run,
+                        self._google_source.search(query, max_results)
+                    )
+                    return future.result()
+            else:
+                return loop.run_until_complete(
+                    self._google_source.search(query, max_results)
+                )
+        except RuntimeError:
+            # No event loop exists
+            return asyncio.run(self._google_source.search(query, max_results))
 
     def search_insurer(
         self,
@@ -132,54 +107,11 @@ class ApifyScraperService:
         Returns:
             List of ScrapedNewsItem objects
         """
-        # Build query with name and ANS code for better matching
-        # Use quotes for exact phrase matching on name
-        query = f'"{insurer_name}" OR "ANS {ans_code}"'
-
-        return self.search_google_news(
-            query=query,
+        return self._google_source.search_insurer(
+            insurer_name=insurer_name,
+            ans_code=ans_code,
             max_results=max_results,
         )
-
-    def _parse_results(self, items: list[dict[str, Any]]) -> list[ScrapedNewsItem]:
-        """
-        Parse raw Apify results into ScrapedNewsItem objects.
-
-        Handles various field names and missing data gracefully.
-        """
-        results = []
-
-        for item in items:
-            try:
-                # Extract publication date if available
-                published_at = None
-                date_str = item.get("publishedAt") or item.get("date")
-                if date_str:
-                    try:
-                        # Handle various date formats
-                        if isinstance(date_str, str):
-                            # Try ISO format first
-                            published_at = datetime.fromisoformat(
-                                date_str.replace("Z", "+00:00")
-                            )
-                    except ValueError:
-                        logger.debug(f"Could not parse date: {date_str}")
-
-                news_item = ScrapedNewsItem(
-                    title=item.get("title", "No title"),
-                    description=item.get("description") or item.get("snippet"),
-                    url=item.get("link") or item.get("url"),
-                    source=item.get("source") or item.get("publisher"),
-                    published_at=published_at,
-                    raw_data=item,
-                )
-                results.append(news_item)
-
-            except Exception as e:
-                logger.warning(f"Failed to parse news item: {e}")
-                continue
-
-        return results
 
     def health_check(self) -> dict[str, Any]:
         """
@@ -187,15 +119,21 @@ class ApifyScraperService:
 
         Returns dict with status and any error message.
         """
-        if not self.client:
-            return {"status": "error", "message": "APIFY_TOKEN not configured"}
-
+        # Run the async method synchronously
+        import asyncio
         try:
-            # Try to get user info as a connectivity test
-            user = self.client.user().get()
-            return {
-                "status": "ok",
-                "username": user.get("username"),
-            }
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(
+                        asyncio.run,
+                        self._google_source.health_check()
+                    )
+                    return future.result()
+            else:
+                return loop.run_until_complete(
+                    self._google_source.health_check()
+                )
+        except RuntimeError:
+            return asyncio.run(self._google_source.health_check())
