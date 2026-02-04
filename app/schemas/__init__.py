@@ -1,0 +1,1 @@
+# BrasilIntel Pydantic Schemas Package

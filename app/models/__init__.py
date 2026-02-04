@@ -1,0 +1,1 @@
+# BrasilIntel ORM Models Package

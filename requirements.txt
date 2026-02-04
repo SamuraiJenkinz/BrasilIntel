@@ -1,0 +1,19 @@
+# BrasilIntel API Dependencies
+# Python 3.11+ required
+
+# Web framework
+fastapi[standard]>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Validation
+pydantic>=2.0.0
+
+# Data processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Environment
+python-dotenv>=1.0.0
