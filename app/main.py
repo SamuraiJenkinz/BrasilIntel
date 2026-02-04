@@ -12,7 +12,7 @@ from fastapi.responses import RedirectResponse
 
 from app.database import Base, engine
 # Import models to register them with Base.metadata before create_all
-from app.models import insurer  # noqa: F401
+from app.models import insurer, run, news_item  # noqa: F401
 from app.routers import insurers, import_export
 
 # Load environment variables from .env file
