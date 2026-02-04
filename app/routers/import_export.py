@@ -16,11 +16,12 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.models.insurer import Insurer
-from app.services.excel_service import parse_excel_insurers
+from app.services.excel_service import parse_excel_insurers, generate_excel_export
 
 router = APIRouter(prefix="/api/import", tags=["import"])
 
@@ -302,3 +303,85 @@ async def delete_session(session_id: str) -> dict:
 
     del preview_sessions[session_id]
     return {'status': 'deleted', 'session_id': session_id}
+
+
+@router.get("/export")
+def export_insurers(
+    category: str | None = None,
+    enabled: bool | None = None,
+    db: Session = Depends(get_db)
+) -> StreamingResponse:
+    """
+    Export insurers to Excel file (DATA-06).
+
+    Downloads an Excel file containing insurer data matching the original
+    import format for round-trip compatibility. Supports optional filtering.
+
+    Args:
+        category: Filter by category (Health, Dental, Group Life)
+        enabled: Filter by enabled status (true/false)
+
+    Returns:
+        StreamingResponse with Excel file download
+
+    Raises:
+        HTTPException 404: If no insurers found matching criteria
+    """
+    # Build query with optional filters
+    query = db.query(Insurer)
+
+    if category:
+        query = query.filter(Insurer.category == category)
+    if enabled is not None:
+        query = query.filter(Insurer.enabled == enabled)
+
+    insurers = query.order_by(Insurer.category, Insurer.name).all()
+
+    if not insurers:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No insurers found matching criteria"
+        )
+
+    # Generate Excel
+    output = generate_excel_export(insurers)
+
+    # Generate filename with timestamp
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    filename = f"insurers_export_{timestamp}.xlsx"
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+
+@router.get("/stats")
+def get_import_stats(db: Session = Depends(get_db)) -> dict:
+    """
+    Get summary statistics about insurers.
+
+    Provides quick overview of total insurer counts by category
+    and enabled status for dashboard display.
+
+    Returns:
+        Dictionary with total, enabled/disabled counts, and category breakdown
+    """
+    total = db.query(Insurer).count()
+    enabled_count = db.query(Insurer).filter(Insurer.enabled == True).count()
+
+    # Count by category
+    by_category = {}
+    for category_name in ['Health', 'Dental', 'Group Life']:
+        count = db.query(Insurer).filter(Insurer.category == category_name).count()
+        by_category[category_name] = count
+
+    return {
+        'total': total,
+        'enabled': enabled_count,
+        'disabled': total - enabled_count,
+        'by_category': by_category
+    }
