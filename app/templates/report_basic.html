@@ -61,10 +61,10 @@
             <h2>Resumo Executivo</h2>
             <p>Este relatório abrange <strong>{{ total_insurers }}</strong> seguradoras na categoria {{ category }}.</p>
             <div class="summary-stats">
-                <div class="stat-card critical"><div class="stat-number">{{ critical_count }}</div><div class="stat-label">Critical</div></div>
-                <div class="stat-card watch"><div class="stat-number">{{ watch_count }}</div><div class="stat-label">Watch</div></div>
-                <div class="stat-card monitor"><div class="stat-number">{{ monitor_count }}</div><div class="stat-label">Monitor</div></div>
-                <div class="stat-card stable"><div class="stat-number">{{ stable_count }}</div><div class="stat-label">Stable</div></div>
+                <div class="stat-card critical"><div class="stat-number">{{ status_counts.Critical }}</div><div class="stat-label">Critical</div></div>
+                <div class="stat-card watch"><div class="stat-number">{{ status_counts.Watch }}</div><div class="stat-label">Watch</div></div>
+                <div class="stat-card monitor"><div class="stat-number">{{ status_counts.Monitor }}</div><div class="stat-label">Monitor</div></div>
+                <div class="stat-card stable"><div class="stat-number">{{ status_counts.Stable }}</div><div class="stat-label">Stable</div></div>
             </div>
         </div>
         {% for status in ['Critical', 'Watch', 'Monitor', 'Stable'] %}
@@ -81,14 +81,14 @@
                 {% for item in insurer.news_items %}
                 <div class="news-item">
                     <div class="news-title">
-                        {% if item.url %}<a href="{{ item.url }}" target="_blank">{{ item.title }}</a>
+                        {% if item.source_url %}<a href="{{ item.source_url }}" target="_blank">{{ item.title }}</a>
                         {% else %}{{ item.title }}{% endif %}
                     </div>
-                    {% if item.summary_bullets %}
-                    <ul class="news-summary">{% for bullet in item.summary_bullets %}<li>{{ bullet }}</li>{% endfor %}</ul>
+                    {% if item.summary %}
+                    <ul class="news-summary">{% for bullet in item.summary.split('\n') if bullet.strip() %}<li>{{ bullet.strip().lstrip('•').strip() }}</li>{% endfor %}</ul>
                     {% endif %}
                     <div class="news-meta">
-                        {% if item.source %}Fonte: {{ item.source }}{% endif %}
+                        {% if item.source_name %}Fonte: {{ item.source_name }}{% endif %}
                         {% if item.published_at %} | {{ item.published_at }}{% endif %}
                         {% if item.sentiment %}<span class="news-sentiment {{ item.sentiment }}">{{ item.sentiment }}</span>{% endif %}
                     </div>
@@ -101,7 +101,7 @@
         {% endfor %}
     </div>
     <div class="footer">
-        <p>Gerado em: {{ generated_at }} | BrasilIntel v0.1.0</p>
+        <p>Gerado em: {{ generation_timestamp }} | BrasilIntel v0.1.0</p>
         <p>Este relatório é confidencial e destinado apenas aos destinatários indicados.</p>
     </div>
 </body>

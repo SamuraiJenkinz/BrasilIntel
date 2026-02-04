@@ -131,9 +131,9 @@ class ReportService:
 
     def generate_report_from_db(
         self,
-        db: Session,
+        category: str,
         run_id: int,
-        category: str
+        db_session: Session
     ) -> str:
         """
         Generate report for a specific run from database.
@@ -142,9 +142,9 @@ class ReportService:
         then generates the HTML report.
 
         Args:
-            db: Database session
-            run_id: Run ID to generate report for
             category: Insurer category to filter by
+            run_id: Run ID to generate report for
+            db_session: Database session
 
         Returns:
             Rendered HTML report as string
@@ -153,13 +153,13 @@ class ReportService:
             ValueError: If run not found
         """
         # Verify run exists
-        run = db.query(Run).filter(Run.id == run_id).first()
+        run = db_session.query(Run).filter(Run.id == run_id).first()
         if not run:
             raise ValueError(f"Run {run_id} not found")
 
         # Load insurers with their news items for this run
         insurers = (
-            db.query(Insurer)
+            db_session.query(Insurer)
             .filter(
                 Insurer.category == category,
                 Insurer.enabled == True
@@ -173,7 +173,7 @@ class ReportService:
         # Load news items for each insurer
         for insurer in insurers:
             insurer.news_items = (
-                db.query(NewsItem)
+                db_session.query(NewsItem)
                 .filter(
                     NewsItem.insurer_id == insurer.id,
                     NewsItem.run_id == run_id
