@@ -1,0 +1,38 @@
+# BrasilIntel Docker Compose Configuration
+# For local development on Windows 11
+
+version: "3.8"
+
+services:
+  brasilintel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brasilintel-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Named volume for SQLite persistence (recommended over bind mount)
+      - brasilintel-data:/app/data
+      # Optional: Mount templates for live editing during development
+      # - ./app/templates:/app/app/templates:ro
+    env_file:
+      - .env
+    environment:
+      # Override database path to use container's data directory
+      - DATABASE_URL=sqlite:////app/data/brasilintel.db
+      - DATA_DIR=/app/data
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# Named volume for data persistence
+# Data survives container restarts and rebuilds
+volumes:
+  brasilintel-data:
+    driver: local

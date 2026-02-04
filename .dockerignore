@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+.eggs/
+*.egg-info/
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Planning files
+.planning/
+refchyt/
+
+# Local data (use volume instead)
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files (loaded separately)
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Miscellaneous
+*.bak
+*.tmp
+*.temp
