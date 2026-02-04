@@ -159,7 +159,8 @@ class RSSNewsSource(NewsSource):
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.head(
+                # Use GET instead of HEAD - some servers block HEAD requests
+                async with session.get(
                     self.FEED_URLS[0], timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     if response.status < 400:
