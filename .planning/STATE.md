@@ -1,27 +1,24 @@
 # Project State
 
 ## Project Reference
-
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** Phase 2 - Vertical Slice Validation
+**Current focus:** Phase 3 - News Collection Scale
 
 ## Current Position
-
-Phase: 2 of 8 (Vertical Slice Validation)
-Plan: 9 of 9 in current phase
-Status: Phase 2 Complete
-Last activity: 2026-02-04 - Completed 02-09-PLAN.md (Windows Scheduled Task Deployment)
-
-Progress: [██░░░░░░░░] 25% (2/8 phases complete)
+Phase: 3 of 8 (News Collection Scale)
+Plan: 1 of 6
+Status: In progress
+Progress: [██░░░░░░░░] 27% (2.17/8 phases complete)
+Last activity: 2026-02-04 - Completed 03-01-PLAN.md
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: ~5.2 minutes
-- Total execution time: ~1.13 hours
+- Total plans completed: 14
+- Average duration: ~4.9 minutes
+- Total execution time: ~1.17 hours
 
 **By Phase:**
 
@@ -29,10 +26,11 @@ Progress: [██░░░░░░░░] 25% (2/8 phases complete)
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~26 min | ~6.5 min |
 | 02-vertical-slice-validation | 9 | ~42 min | ~4.7 min |
+| 03-news-collection-scale | 1 | ~2 min | ~2 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-05 (~3 min), 02-06 (~3.3 min), 02-07 (~9 min), 02-08 (~2 min), 02-09 (~20 min)
-- Trend: Deployment automation plans take longer due to comprehensive script creation
+- Last 5 plans: 02-06 (~3.3 min), 02-07 (~9 min), 02-08 (~2 min), 02-09 (~20 min), 03-01 (~2 min)
+- Trend: Source abstraction plan was fast due to focused refactoring scope
 
 *Updated after each plan completion*
 
@@ -82,6 +80,11 @@ Recent decisions affecting current work:
 - SYSTEM account execution for proper permissions and service-like behavior (02-09)
 - Staggered daily schedules to prevent resource contention (health 06:00, dental 07:00, group_life 08:00) (02-09)
 - Comprehensive health check validates database, filesystem, and service configuration (02-09)
+- ScrapedNewsItem as dataclass in base.py for unified representation (03-01)
+- Async interface for NewsSource.search() for future batch processing (03-01)
+- SourceRegistry uses class variables for global singleton pattern (03-01)
+- Auto-registration on module import for simple source discovery (03-01)
+- scraper.py delegates to GoogleNewsSource for backward compatibility (03-01)
 
 ### Pending Todos
 
@@ -89,9 +92,12 @@ None yet.
 
 ### Blockers/Concerns
 
-**Phase 2 Research Needs:**
-- Portuguese-specific prompt engineering validation (resource-scarce domain)
-- Apify configuration for 897 concurrent sources with rate limiting
+**Phase 3 Research Findings:**
+- No direct Apify actors for 5 additional Brazilian news sources
+- Hybrid approach needed: RSS feeds for InfoMoney, Estadao, ANS + website crawlers for Valor, CQCS
+- CQCS may have anti-bot protection (403 errors on direct access)
+- Valor Economico exact search URL needs validation
+- ANS gov.br RSS feed reliability uncertain
 
 **Phase 5 Research Needs:**
 - Portuguese sentiment analysis accuracy expectations
@@ -128,23 +134,58 @@ None yet.
 
 | Plan | Name | Status |
 |------|------|--------|
-| 02-01 | Database Models | ✅ DONE |
-| 02-02 | Configuration | ✅ DONE |
-| 02-03 | Scraper Service | ✅ DONE |
-| 02-04 | Classification Service | ✅ DONE |
-| 02-05 | Email Service | ✅ DONE |
-| 02-06 | Report Generator | ✅ DONE |
-| 02-07 | Run Orchestration | ✅ DONE |
-| 02-08 | Import/Export | ✅ DONE |
-| 02-09 | Deployment Automation | ✅ DONE |
+| 02-01 | Database Models | DONE |
+| 02-02 | Configuration | DONE |
+| 02-03 | Scraper Service | DONE |
+| 02-04 | Classification Service | DONE |
+| 02-05 | Email Service | DONE |
+| 02-06 | Report Generator | DONE |
+| 02-07 | Run Orchestration | DONE |
+| 02-08 | Import/Export | DONE |
+| 02-09 | Deployment Automation | DONE |
 
-**Next:** Phase 3 planning and execution
+## Phase 3 Planning - COMPLETE
+
+**Plans: 6 plans in 4 waves**
+
+| Wave | Plans | Description |
+|------|-------|-------------|
+| 1 | 03-01, 03-03 (partial) | Source abstraction + config |
+| 2 | 03-02, 03-03 | RSS sources + crawler sources |
+| 3 | 03-04, 03-05 | Batch processor + relevance scorer |
+| 4 | 03-06 | Integration and endpoint update |
+
+**Requirements covered:**
+- NEWS-02: Valor Economico (03-03)
+- NEWS-03: InfoMoney (03-02)
+- NEWS-04: CQCS (03-03)
+- NEWS-05: ANS releases (03-02)
+- NEWS-06: Estadao/Broadcast (03-02)
+- NEWS-07: Batch processing (03-04)
+- NEWS-08: Complete metadata storage (03-06)
+- NEWS-09: Insurer/run linking (03-06)
+- NEWS-10: AI relevance scoring (03-05)
+
+## Phase 3 Progress - IN PROGRESS
+
+**Plans complete: 1 of 6**
+
+| Plan | Name | Status |
+|------|------|--------|
+| 03-01 | Source Abstraction | DONE |
+| 03-02 | RSS Sources | PENDING |
+| 03-03 | Crawler Sources | PENDING |
+| 03-04 | Batch Processor | PENDING |
+| 03-05 | Relevance Scorer | PENDING |
+| 03-06 | Integration | PENDING |
+
+**Next:** Execute 03-02 (RSS Sources)
 
 ## Session Continuity
 
-Last session: 2026-02-04 17:10 UTC
-Stopped at: Completed 02-09-PLAN.md (Windows Scheduled Task Deployment)
-Resume file: None (Phase 2 complete, awaiting Phase 3 planning)
+Last session: 2026-02-04
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
 
 ### What's Available Now
 
@@ -164,8 +205,14 @@ From Phase 2:
 - `app.schemas.run.*` - Run schemas and enums (RunStatus, TriggerType) (02-01)
 - `app.schemas.news.*` - NewsItem schemas and enums (InsurerStatus, Sentiment) (02-01)
 - `app.config.Settings, get_settings` - Centralized configuration (02-02)
-- `app.services.scraper.ApifyScraperService` - Google News scraper (02-03)
-- `app.services.scraper.ScrapedNewsItem` - Scraping result dataclass (02-03)
+- `app.services.scraper.ApifyScraperService` - Google News scraper (02-03, delegates to sources)
+- `app.services.scraper.ScrapedNewsItem` - Scraping result dataclass (02-03, re-exported from sources)
+
+From Phase 3 (in progress):
+- `app.services.sources.NewsSource` - Abstract base class for news sources (03-01)
+- `app.services.sources.SourceRegistry` - Source discovery and management (03-01)
+- `app.services.sources.ScrapedNewsItem` - Unified news item dataclass (03-01)
+- `app.services.sources.GoogleNewsSource` - Google News implementation (03-01)
 - `app.services.classifier.ClassificationService` - Azure OpenAI classification (02-04)
 - `app.schemas.classification.*` - NewsClassification, InsurerClassification (02-04)
 - `app.services.emailer.GraphEmailService` - Microsoft Graph email sender (02-05)
@@ -182,4 +229,4 @@ From Phase 2:
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-04 17:10 UTC
+*Last updated: 2026-02-04
