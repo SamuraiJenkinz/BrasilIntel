@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 2 of 8 (Vertical Slice Validation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan Phase 2
-Last activity: 2026-02-04 - Phase 1 verified and complete
+Plan: 2 of 9 in current phase
+Status: In progress
+Last activity: 2026-02-04 - Completed 02-02-PLAN.md (Centralized Configuration)
 
-Progress: [█░░░░░░░░░] 12.5% (1/8 phases)
+Progress: [█░░░░░░░░░] 12.5% (1/8 phases complete, Phase 2 at 22%)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: ~6.5 minutes
-- Total execution time: ~0.4 hours
+- Total plans completed: 5
+- Average duration: ~5.6 minutes
+- Total execution time: ~0.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~26 min | ~6.5 min |
+| 02-vertical-slice-validation | 1 | ~2.5 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~3 min), 01-02 (~3 min), 01-03 (~12 min), 01-04 (~8 min)
-- Trend: Stable execution, longer plans include end-to-end testing
+- Last 5 plans: 01-02 (~3 min), 01-03 (~12 min), 01-04 (~8 min), 02-01 (~2.5 min)
+- Trend: Model-only plans faster than full-stack plans with testing
 
 *Updated after each plan completion*
 
@@ -55,6 +56,10 @@ Recent decisions affecting current work:
 - Portuguese category normalization auto-mapped to English standard (01-03)
 - Export column names match import format for round-trip compatibility (01-04)
 - StreamingResponse for efficient large file downloads (01-04)
+- Run model tracks category for per-category scraping runs (02-01)
+- NewsItem classification fields nullable for two-phase scrape→classify workflow (02-01)
+- Run trigger_type enum supports scheduled and manual execution tracking (02-01)
+- pydantic-settings for centralized configuration with validation (02-02)
 
 ### Pending Todos
 
@@ -95,13 +100,24 @@ None yet.
 
 **Database populated:** 902 insurers from ByCat3.xlsx
 
+## Phase 2 Progress - IN PROGRESS
+
+**Plans complete: 2 of 9**
+
+| Plan | Name | Status |
+|------|------|--------|
+| 02-01 | Database Models | ✅ DONE |
+| 02-02 | Configuration | ✅ DONE |
+
+**Next:** 02-03 Scraper service implementation
+
 ## Session Continuity
 
-Last session: 2026-02-04 14:52 UTC
-Stopped at: Completed 01-04-PLAN.md (Phase 1 complete)
-Resume file: .planning/phases/02-news-ingestion/02-01-PLAN.md (next phase)
+Last session: 2026-02-04 15:59 UTC
+Stopped at: Completed 02-01-PLAN.md (Database models)
+Resume file: .planning/phases/02-vertical-slice-validation/02-03-PLAN.md
 
-### What's Available for Phase 2
+### What's Available Now
 
 From Phase 1:
 - `app.database.Base, engine, SessionLocal` - Database infrastructure
@@ -113,6 +129,19 @@ From Phase 1:
 - `app.services.excel_service` - Excel parsing and generation
 - `data/brasilintel.db` - SQLite database with insurers table
 
+From Phase 2:
+- `app.models.run.Run` - Run ORM model with status tracking (02-01)
+- `app.models.news_item.NewsItem` - NewsItem ORM model with classification fields (02-01)
+- `app.schemas.run.*` - Run schemas and enums (RunStatus, TriggerType) (02-01)
+- `app.schemas.news.*` - NewsItem schemas and enums (InsurerStatus, Sentiment) (02-01)
+- Database tables: runs, news_items with foreign keys (02-01)
+
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-04 14:52 UTC*
+*Last updated: 2026-02-04 15:59 UTC*
+
+From Phase 2 (so far):
+- `app.models.run.Run` - Scraping run tracking (02-01)
+- `app.models.news_item.NewsItem` - News articles with classification (02-01)
+- `app.config.Settings, get_settings` - Centralized configuration (02-02)
+- All Phase 2 dependencies installed (pydantic-settings, apify-client, openai, msgraph-sdk, etc.) (02-02)
