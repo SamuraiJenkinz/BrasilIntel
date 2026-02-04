@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 2 of 8 (Vertical Slice Validation)
-Plan: 2 of 9 in current phase
+Plan: 3 of 9 in current phase
 Status: In progress
-Last activity: 2026-02-04 - Completed 02-02-PLAN.md (Centralized Configuration)
+Last activity: 2026-02-04 - Completed 02-03-PLAN.md (Apify Scraper Service)
 
-Progress: [█░░░░░░░░░] 12.5% (1/8 phases complete, Phase 2 at 22%)
+Progress: [█░░░░░░░░░] 14.6% (1/8 phases complete, Phase 2 at 33%)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~5.6 minutes
+- Total plans completed: 6
+- Average duration: ~4.9 minutes
 - Total execution time: ~0.5 hours
 
 **By Phase:**
@@ -28,11 +28,11 @@ Progress: [█░░░░░░░░░] 12.5% (1/8 phases complete, Phase 2 a
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~26 min | ~6.5 min |
-| 02-vertical-slice-validation | 1 | ~2.5 min | ~2.5 min |
+| 02-vertical-slice-validation | 2 | ~4.5 min | ~2.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (~3 min), 01-03 (~12 min), 01-04 (~8 min), 02-01 (~2.5 min)
-- Trend: Model-only plans faster than full-stack plans with testing
+- Last 5 plans: 01-03 (~12 min), 01-04 (~8 min), 02-01 (~2.5 min), 02-02 (~2.5 min), 02-03 (~2 min)
+- Trend: Phase 2 service layer plans consistently faster than full-stack Phase 1 plans
 
 *Updated after each plan completion*
 
@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 - NewsItem classification fields nullable for two-phase scrape→classify workflow (02-01)
 - Run trigger_type enum supports scheduled and manual execution tracking (02-01)
 - pydantic-settings for centralized configuration with validation (02-02)
+- OR queries combine insurer name and ANS code for better search accuracy (02-03)
+- ScrapedNewsItem dataclass for flexible Apify result field mapping (02-03)
+- Non-blocking error handling returns empty lists on scraper failures (02-03)
 
 ### Pending Todos
 
@@ -102,20 +105,21 @@ None yet.
 
 ## Phase 2 Progress - IN PROGRESS
 
-**Plans complete: 2 of 9**
+**Plans complete: 3 of 9**
 
 | Plan | Name | Status |
 |------|------|--------|
 | 02-01 | Database Models | ✅ DONE |
 | 02-02 | Configuration | ✅ DONE |
+| 02-03 | Scraper Service | ✅ DONE |
 
-**Next:** 02-03 Scraper service implementation
+**Next:** 02-04 Classifier service implementation
 
 ## Session Continuity
 
-Last session: 2026-02-04 15:59 UTC
-Stopped at: Completed 02-01-PLAN.md (Database models)
-Resume file: .planning/phases/02-vertical-slice-validation/02-03-PLAN.md
+Last session: 2026-02-04 16:31 UTC
+Stopped at: Completed 02-03-PLAN.md (Apify Scraper Service)
+Resume file: .planning/phases/02-vertical-slice-validation/02-04-PLAN.md
 
 ### What's Available Now
 
@@ -134,14 +138,11 @@ From Phase 2:
 - `app.models.news_item.NewsItem` - NewsItem ORM model with classification fields (02-01)
 - `app.schemas.run.*` - Run schemas and enums (RunStatus, TriggerType) (02-01)
 - `app.schemas.news.*` - NewsItem schemas and enums (InsurerStatus, Sentiment) (02-01)
+- `app.config.Settings, get_settings` - Centralized configuration (02-02)
+- `app.services.scraper.ApifyScraperService` - Google News scraper (02-03)
+- `app.services.scraper.ScrapedNewsItem` - Scraping result dataclass (02-03)
 - Database tables: runs, news_items with foreign keys (02-01)
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-04 15:59 UTC
-
-From Phase 2 (so far):
-- `app.models.run.Run` - Scraping run tracking (02-01)
-- `app.models.news_item.NewsItem` - News articles with classification (02-01)
-- `app.config.Settings, get_settings` - Centralized configuration (02-02)
-- All Phase 2 dependencies installed (pydantic-settings, apify-client, openai, msgraph-sdk, etc.) (02-02)
+*Last updated: 2026-02-04 16:31 UTC
