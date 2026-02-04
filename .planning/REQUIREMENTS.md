@@ -9,14 +9,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Management
 
-- [ ] **DATA-01**: System stores 897 insurers with ANS Code, Name, CNPJ, Product Category, Market Master, Status, Enabled flag
-- [ ] **DATA-02**: Admin can view insurers with search by name/ANS code and filter by category
-- [ ] **DATA-03**: Admin can edit insurer details (name, search terms, enabled/disabled)
-- [ ] **DATA-04**: Admin can upload Excel file to bulk import/update insurers
-- [ ] **DATA-05**: Admin can preview import before committing changes
-- [ ] **DATA-06**: Admin can export current insurer data as Excel
-- [ ] **DATA-07**: System validates required fields (ANS Code, Name, Category) on import
-- [ ] **DATA-08**: System rejects duplicate ANS codes with clear error messages
+- [x] **DATA-01**: System stores 897 insurers with ANS Code, Name, CNPJ, Product Category, Market Master, Status, Enabled flag
+- [x] **DATA-02**: Admin can view insurers with search by name/ANS code and filter by category
+- [x] **DATA-03**: Admin can edit insurer details (name, search terms, enabled/disabled)
+- [x] **DATA-04**: Admin can upload Excel file to bulk import/update insurers
+- [x] **DATA-05**: Admin can preview import before committing changes
+- [x] **DATA-06**: Admin can export current insurer data as Excel
+- [x] **DATA-07**: System validates required fields (ANS Code, Name, Category) on import
+- [x] **DATA-08**: System rejects duplicate ANS codes with clear error messages
 
 ### News Collection
 
@@ -153,14 +153,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| DATA-05 | Phase 1 | Pending |
-| DATA-06 | Phase 1 | Pending |
-| DATA-07 | Phase 1 | Pending |
-| DATA-08 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
+| DATA-05 | Phase 1 | Complete |
+| DATA-06 | Phase 1 | Complete |
+| DATA-07 | Phase 1 | Complete |
+| DATA-08 | Phase 1 | Complete |
 | NEWS-01 | Phase 2 | Pending |
 | NEWS-02 | Phase 3 | Pending |
 | NEWS-03 | Phase 3 | Pending |

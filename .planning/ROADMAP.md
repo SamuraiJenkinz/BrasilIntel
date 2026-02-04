@@ -12,7 +12,7 @@ BrasilIntel delivers daily competitive intelligence to Marsh Brasil executives t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Data Layer** - Core persistence, insurer database, Excel import/export
+- [x] **Phase 1: Foundation & Data Layer** - Core persistence, insurer database, Excel import/export
 - [ ] **Phase 2: Vertical Slice Validation** - Single-source end-to-end pipeline proof
 - [ ] **Phase 3: News Collection Scale** - All sources, 897 insurers, production scraping
 - [ ] **Phase 4: AI Classification Pipeline** - Full Azure OpenAI classification system
@@ -33,11 +33,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Admin can export current insurer list as Excel file matching original format
   4. System rejects duplicate ANS codes and shows clear validation errors
   5. System validates all required fields (ANS Code, Name, Category) before import commit
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 01-01: TBD during planning
-- [ ] 01-02: TBD during planning
+- [x] 01-01-PLAN.md — Project scaffolding, database setup, Insurer model and schemas
+- [x] 01-02-PLAN.md — Insurer CRUD endpoints with search and filter
+- [x] 01-03-PLAN.md — Excel import with preview-before-commit workflow
+- [x] 01-04-PLAN.md — Excel export and complete data management cycle
 
 ### Phase 2: Vertical Slice Validation
 **Goal**: Prove end-to-end architecture with minimal single-source pipeline (Google News → Azure OpenAI → Email)
@@ -168,7 +170,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Data Layer | 0/TBD | Not started | - |
+| 1. Foundation & Data Layer | 4/4 | Complete ✓ | 2026-02-04 |
 | 2. Vertical Slice Validation | 0/TBD | Not started | - |
 | 3. News Collection Scale | 0/TBD | Not started | - |
 | 4. AI Classification Pipeline | 0/TBD | Not started | - |
