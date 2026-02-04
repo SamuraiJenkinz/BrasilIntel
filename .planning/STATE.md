@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** Phase 1 - Foundation & Data Layer
+**Current focus:** Phase 1 COMPLETE - Ready for Phase 2
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation & Data Layer)
-Plan: 3 of 4 in current phase (01-02, 01-03 complete)
-Status: In progress - Wave 2 complete
-Last activity: 2026-02-04 — Completed 01-03-PLAN.md (Excel Import with Preview)
+Phase: 1 of 8 (Foundation & Data Layer) - COMPLETE
+Plan: 4 of 4 in current phase (all complete)
+Status: Phase 1 Complete - Ready for Phase 2
+Last activity: 2026-02-04 - Completed 01-04-PLAN.md (Excel Export)
 
-Progress: [███░░░░░░░] 9% (3/32 plans)
+Progress: [████░░░░░░] 12.5% (4/32 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~6 minutes
-- Total execution time: ~0.3 hours
+- Total plans completed: 4
+- Average duration: ~6.5 minutes
+- Total execution time: ~0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 3 | ~18 min | ~6 min |
+| 01-foundation | 4 | ~26 min | ~6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~3 min), 01-02 (~3 min), 01-03 (~12 min)
-- Trend: Stable execution, 01-03 slightly longer due to end-to-end testing
+- Last 5 plans: 01-01 (~3 min), 01-02 (~3 min), 01-03 (~12 min), 01-04 (~8 min)
+- Trend: Stable execution, longer plans include end-to-end testing
 
 *Updated after each plan completion*
 
@@ -53,6 +53,8 @@ Recent decisions affecting current work:
 - In-memory session storage for MVP import preview (30-minute TTL) (01-03)
 - Merge mode default for import - updates existing records (01-03)
 - Portuguese category normalization auto-mapped to English standard (01-03)
+- Export column names match import format for round-trip compatibility (01-04)
+- StreamingResponse for efficient large file downloads (01-04)
 
 ### Pending Todos
 
@@ -72,50 +74,45 @@ None yet.
 - Marsh system integration APIs (if v2 advanced analytics pursued)
 - Brazilian regulatory data sources classification
 
-## Phase 1 Plan Summary
+## Phase 1 Summary - COMPLETE
 
-**4 plans in 3 execution waves:**
+**All 4 plans complete across 3 execution waves:**
 
-| Wave | Plans | Description |
-|------|-------|-------------|
-| 1 | 01-01 DONE | Project scaffolding, database, models, schemas |
-| 2 | 01-02 DONE, 01-03 DONE | CRUD endpoints + Excel import |
-| 3 | 01-04 | Excel export (depends on both 01-02 and 01-03) |
+| Wave | Plans | Description | Status |
+|------|-------|-------------|--------|
+| 1 | 01-01 | Project scaffolding, database, models, schemas | DONE |
+| 2 | 01-02, 01-03 | CRUD endpoints + Excel import | DONE |
+| 3 | 01-04 | Excel export | DONE |
 
-**Wave 2 complete:**
-- 01-02 COMPLETE: `app/routers/insurers.py` - CRUD API with search
-- 01-03 COMPLETE: `app/services/excel_service.py` + `app/routers/import_export.py` - Excel import
+**DATA requirements fulfilled:**
+- DATA-01: CRUD endpoints (01-02)
+- DATA-02: Search/filter insurers (01-02)
+- DATA-04: Upload Excel file (01-03)
+- DATA-05: Preview before commit (01-03)
+- DATA-06: Export as Excel (01-04)
+- DATA-07: Validate required fields (01-03)
+- DATA-08: Handle duplicates (01-03)
 
-**Wave 3 ready to execute:**
-- 01-04: Excel export endpoint (all dependencies satisfied)
+**Database populated:** 902 insurers from ByCat3.xlsx
 
 ## Session Continuity
 
-Last session: 2026-02-04 14:42 UTC
-Stopped at: Completed 01-03-PLAN.md
-Resume file: .planning/phases/01-foundation-data-layer/01-04-PLAN.md (next)
+Last session: 2026-02-04 14:52 UTC
+Stopped at: Completed 01-04-PLAN.md (Phase 1 complete)
+Resume file: .planning/phases/02-news-ingestion/02-01-PLAN.md (next phase)
 
-### What's Available for Next Plans
+### What's Available for Phase 2
 
-From 01-01:
+From Phase 1:
 - `app.database.Base, engine, SessionLocal` - Database infrastructure
 - `app.dependencies.get_db` - Session dependency
-- `app.models.insurer.Insurer` - ORM model
+- `app.models.insurer.Insurer` - ORM model with 902 records
 - `app.schemas.insurer.*` - Pydantic schemas
+- `app.routers.insurers.router` - CRUD + search at /api/insurers
+- `app.routers.import_export.router` - Import/export at /api/import
+- `app.services.excel_service` - Excel parsing and generation
 - `data/brasilintel.db` - SQLite database with insurers table
-
-From 01-02:
-- `app.routers.insurers.router` - CRUD endpoints at /api/insurers
-- Search endpoint: GET /api/insurers/search?query=&category=&enabled=
-- Router registration pattern in app/main.py
-
-From 01-03:
-- `app.services.excel_service.parse_excel_insurers` - Excel parsing with validation
-- `app.services.excel_service.generate_excel_export` - Excel file generation (ready for 01-04)
-- `app.routers.import_export.router` - Import endpoints at /api/import
-- Preview-before-commit pattern with session management
-- Column normalization for Portuguese/English Excel headers
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-04 14:42 UTC*
+*Last updated: 2026-02-04 14:52 UTC*
