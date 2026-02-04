@@ -8,17 +8,17 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 Phase: 3 of 8 (News Collection Scale)
-Plan: 3 of 6
+Plan: 4 of 6
 Status: In progress
-Progress: [███░░░░░░░] 30% (2.5/8 phases complete)
-Last activity: 2026-02-04 - Completed 03-03-PLAN.md
+Progress: [███░░░░░░░] 32% (2.67/8 phases complete)
+Last activity: 2026-02-04 - Completed 03-04-PLAN.md
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: ~4.7 minutes
-- Total execution time: ~1.28 hours
+- Total execution time: ~1.35 hours
 
 **By Phase:**
 
@@ -26,11 +26,11 @@ Last activity: 2026-02-04 - Completed 03-03-PLAN.md
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~26 min | ~6.5 min |
 | 02-vertical-slice-validation | 9 | ~42 min | ~4.7 min |
-| 03-news-collection-scale | 3 | ~10 min | ~3.3 min |
+| 03-news-collection-scale | 4 | ~14 min | ~3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-08 (~2 min), 02-09 (~20 min), 03-01 (~2 min), 03-02 (~4 min), 03-03 (~4 min)
-- Trend: Wave 2 plans (03-02, 03-03) executed in parallel for news sources
+- Last 5 plans: 02-09 (~20 min), 03-01 (~2 min), 03-02 (~4 min), 03-03 (~4 min), 03-04 (~4 min)
+- Trend: Wave 3 batch processor with tests
 
 *Updated after each plan completion*
 
@@ -92,6 +92,9 @@ Recent decisions affecting current work:
 - feedparser + aiohttp for RSS feed parsing with async fetching (03-02)
 - GET instead of HEAD for health checks (some servers block HEAD) (03-02)
 - G1 Economia RSS used for EstadaoSource (Estadao deprecated their feeds) (03-02)
+- Semaphore-based concurrency control for batch processing (03-04)
+- Batch + delay pattern for rate limiting (03-04)
+- Custom search_terms support for insurers (03-04)
 
 ### Pending Todos
 
@@ -175,23 +178,23 @@ None yet.
 
 ## Phase 3 Progress - IN PROGRESS
 
-**Plans complete: 3 of 6**
+**Plans complete: 4 of 6**
 
 | Plan | Name | Status |
 |------|------|--------|
 | 03-01 | Source Abstraction | DONE |
 | 03-02 | RSS Sources | DONE |
 | 03-03 | Crawler Sources | DONE |
-| 03-04 | Batch Processor | PENDING |
+| 03-04 | Batch Processor | DONE |
 | 03-05 | Relevance Scorer | PENDING |
 | 03-06 | Integration | PENDING |
 
-**Next:** Execute 03-04 (Batch Processor) and 03-05 (Relevance Scorer) in Wave 3
+**Next:** Execute 03-05 (Relevance Scorer) in Wave 3
 
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03-03-PLAN.md
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
 
 ### What's Available Now
@@ -227,6 +230,10 @@ From Phase 3 (in progress):
 - `app.services.sources.ValorSource` - Valor Economico crawler (03-03)
 - `app.services.sources.CQCSSource` - CQCS crawler (03-03)
 - `app.config.batch_size, batch_delay_seconds, max_concurrent_sources` - Batch config (03-03)
+- `app.services.batch_processor.BatchProcessor` - Batch processing orchestrator (03-04)
+- `app.services.batch_processor.BatchProgress` - Progress tracking dataclass (03-04)
+- `app.services.batch_processor.InsurerResult` - Per-insurer result dataclass (03-04)
+- `tests/test_batch_processor.py` - Batch processor unit tests (03-04)
 - `app.services.classifier.ClassificationService` - Azure OpenAI classification (02-04)
 - `app.schemas.classification.*` - NewsClassification, InsurerClassification (02-04)
 - `app.services.emailer.GraphEmailService` - Microsoft Graph email sender (02-05)
