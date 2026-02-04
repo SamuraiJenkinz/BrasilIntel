@@ -8,17 +8,17 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 Phase: 3 of 8 (News Collection Scale)
-Plan: 4 of 6
+Plan: 5 of 6
 Status: In progress
-Progress: [███░░░░░░░] 32% (2.67/8 phases complete)
-Last activity: 2026-02-04 - Completed 03-04-PLAN.md
+Progress: [███░░░░░░░] 35% (2.83/8 phases complete)
+Last activity: 2026-02-04 - Completed 03-05-PLAN.md
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: ~4.7 minutes
-- Total execution time: ~1.35 hours
+- Total plans completed: 18
+- Average duration: ~4.6 minutes
+- Total execution time: ~1.4 hours
 
 **By Phase:**
 
@@ -26,11 +26,11 @@ Last activity: 2026-02-04 - Completed 03-04-PLAN.md
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~26 min | ~6.5 min |
 | 02-vertical-slice-validation | 9 | ~42 min | ~4.7 min |
-| 03-news-collection-scale | 4 | ~14 min | ~3.5 min |
+| 03-news-collection-scale | 5 | ~17 min | ~3.4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-09 (~20 min), 03-01 (~2 min), 03-02 (~4 min), 03-03 (~4 min), 03-04 (~4 min)
-- Trend: Wave 3 batch processor with tests
+- Last 5 plans: 03-01 (~2 min), 03-02 (~4 min), 03-03 (~4 min), 03-04 (~4 min), 03-05 (~3 min)
+- Trend: Wave 3 relevance scorer with two-pass filtering
 
 *Updated after each plan completion*
 
@@ -95,6 +95,9 @@ Recent decisions affecting current work:
 - Semaphore-based concurrency control for batch processing (03-04)
 - Batch + delay pattern for rate limiting (03-04)
 - Custom search_terms support for insurers (03-04)
+- Two-pass filtering: keyword first (free), AI second (paid) (03-05)
+- Fail-open error handling for relevance scoring (03-05)
+- Portuguese prompts for AI relevance scoring (03-05)
 
 ### Pending Todos
 
@@ -178,7 +181,7 @@ None yet.
 
 ## Phase 3 Progress - IN PROGRESS
 
-**Plans complete: 4 of 6**
+**Plans complete: 5 of 6**
 
 | Plan | Name | Status |
 |------|------|--------|
@@ -186,15 +189,15 @@ None yet.
 | 03-02 | RSS Sources | DONE |
 | 03-03 | Crawler Sources | DONE |
 | 03-04 | Batch Processor | DONE |
-| 03-05 | Relevance Scorer | PENDING |
+| 03-05 | Relevance Scorer | DONE |
 | 03-06 | Integration | PENDING |
 
-**Next:** Execute 03-05 (Relevance Scorer) in Wave 3
+**Next:** Execute 03-06 (Integration) in Wave 4
 
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03-04-PLAN.md
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
 
 ### What's Available Now
@@ -234,6 +237,9 @@ From Phase 3 (in progress):
 - `app.services.batch_processor.BatchProgress` - Progress tracking dataclass (03-04)
 - `app.services.batch_processor.InsurerResult` - Per-insurer result dataclass (03-04)
 - `tests/test_batch_processor.py` - Batch processor unit tests (03-04)
+- `app.services.relevance_scorer.RelevanceScorer` - Two-pass relevance filtering (03-05)
+- `tests/test_relevance_scorer.py` - Relevance scorer unit tests (03-05)
+- `app.config.use_ai_relevance_scoring, relevance_keyword_threshold, relevance_ai_batch_size` - Relevance config (03-05)
 - `app.services.classifier.ClassificationService` - Azure OpenAI classification (02-04)
 - `app.schemas.classification.*` - NewsClassification, InsurerClassification (02-04)
 - `app.services.emailer.GraphEmailService` - Microsoft Graph email sender (02-05)
