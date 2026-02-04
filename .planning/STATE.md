@@ -4,20 +4,20 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** Phase 5 Complete - Ready for Phase 6
+**Current focus:** Phase 6 - Delivery & Critical Alerts
 
 ## Current Position
-Phase: 5 of 8 (Professional Reporting) - COMPLETE
-Plan: 5 of 5
-Status: Phase Complete
-Progress: [██████░░░░] 62.5% (5/8 phases complete)
-Last activity: 2026-02-04 - Completed 05-05 Report Archive API
+Phase: 6 of 8 (Delivery & Critical Alerts)
+Plan: 1 of 4
+Status: In Progress
+Progress: [██████░░░░] 65.6% (23/35 plans complete)
+Last activity: 2026-02-04 - Completed 06-01 Delivery Schemas and Configuration
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: ~4.8 minutes
+- Total plans completed: 23
+- Average duration: ~4.7 minutes
 - Total execution time: ~1.8 hours
 
 **By Phase:**
@@ -29,10 +29,11 @@ Last activity: 2026-02-04 - Completed 05-05 Report Archive API
 | 03-news-collection-scale | 6 | ~32 min | ~5.3 min |
 | 04-ai-classification-pipeline | 2 | ~4 min | ~2.0 min |
 | 05-professional-reporting | 5 | ~22 min | ~4.4 min |
+| 06-delivery-critical-alerts | 1 | ~2 min | ~2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (~2 min), 05-02 (~2 min), 05-03 (~2 min), 05-04 (~2 min), 05-05 (~14 min)
-- Trend: Efficient reporting services, checkpoint verification added time to 05-05
+- Last 5 plans: 05-03 (~2 min), 05-04 (~2 min), 05-05 (~14 min), 06-01 (~2 min)
+- Trend: Fast schema/config changes, checkpoint verification adds time
 
 *Updated after each plan completion*
 
@@ -115,6 +116,10 @@ Recent decisions affecting current work:
 - Router prefix /reports with /api prefix in main.py for consistent URL structure (05-05)
 - HTMLResponse for direct browser rendering of archived reports (05-05)
 - Preview endpoint uses mock data without archival for safe testing (05-05)
+- EmailRecipients has has_recipients property for validation before sending (06-01)
+- DeliveryStatus uses lowercase values for consistency with other enums (06-01)
+- _parse_recipient_list as private helper for DRY parsing (06-01)
+- Nullable delivery columns with defaults for SQLite auto-migration (06-01)
 
 ### Pending Todos
 
@@ -236,12 +241,23 @@ None yet.
 - REPT-12: File-based archival system (05-03)
 - REPT-13: Report archive browsing API (05-05)
 
-**Next:** Phase 6 - Advanced Analytics
+**Next:** 06-02 PDF Generation
+
+## Phase 6 Progress - IN PROGRESS
+
+**Plans complete: 1 of 4**
+
+| Plan | Name | Status |
+|------|------|--------|
+| 06-01 | Delivery Schemas | DONE |
+| 06-02 | PDF Generation | pending |
+| 06-03 | Critical Alerts | pending |
+| 06-04 | Delivery Integration | pending |
 
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed Phase 5 - Professional Reporting
+Stopped at: Completed 06-01 Delivery Schemas and Configuration
 Resume file: None
 
 ### What's Available Now
@@ -319,6 +335,13 @@ From Phase 5 (complete):
 - `/api/reports/archive/dates` - List available report dates (05-05)
 - `/api/reports/archive/{date}/{filename}` - Retrieve specific report (05-05)
 - `/api/reports/preview` - Preview professional template (05-05)
+
+From Phase 6 (in progress):
+- `app.schemas.delivery.EmailRecipients` - Structured TO/CC/BCC recipient handling (06-01)
+- `app.schemas.delivery.DeliveryStatus` - Delivery status enum (pending/sent/failed/skipped) (06-01)
+- `app.config.Settings.get_email_recipients()` - Returns EmailRecipients for category (06-01)
+- `app.config.Settings` CC/BCC fields: report_recipients_*_cc, report_recipients_*_bcc (06-01)
+- `app.models.run.Run` delivery tracking: email_status, pdf_generated, critical_alert_sent (06-01)
 
 ---
 *Initialized: 2026-02-04*
