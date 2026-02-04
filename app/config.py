@@ -8,6 +8,8 @@ from functools import lru_cache
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.schemas.delivery import EmailRecipients
+
 
 class Settings(BaseSettings):
     """Application configuration loaded from environment."""
@@ -47,9 +49,15 @@ class Settings(BaseSettings):
 
     # Report settings
     company_name: str = "Marsh Brasil"
-    report_recipients_health: str = ""  # Comma-separated emails
+    report_recipients_health: str = ""  # Comma-separated emails (TO)
+    report_recipients_health_cc: str = ""  # CC recipients
+    report_recipients_health_bcc: str = ""  # BCC recipients
     report_recipients_dental: str = ""
+    report_recipients_dental_cc: str = ""
+    report_recipients_dental_bcc: str = ""
     report_recipients_group_life: str = ""
+    report_recipients_group_life_cc: str = ""
+    report_recipients_group_life_bcc: str = ""
 
     # Batch processing settings (NEWS-07)
     batch_size: int = 30  # Insurers per batch (30-50 recommended)
@@ -67,17 +75,49 @@ class Settings(BaseSettings):
     relevance_keyword_threshold: int = 20  # Items below this skip AI scoring
     relevance_ai_batch_size: int = 10  # Items per AI scoring request
 
+    def _parse_recipient_list(self, recipients_str: str) -> list[str]:
+        """Parse comma-separated email list, stripping whitespace."""
+        if not recipients_str:
+            return []
+        return [r.strip() for r in recipients_str.split(",") if r.strip()]
+
     def get_report_recipients(self, category: str) -> list[str]:
-        """Get list of recipients for a category."""
+        """Get list of TO recipients for a category (backward compatibility)."""
         recipients_map = {
             "Health": self.report_recipients_health,
             "Dental": self.report_recipients_dental,
             "Group Life": self.report_recipients_group_life,
         }
         recipients_str = recipients_map.get(category, "")
-        if not recipients_str:
-            return []
-        return [r.strip() for r in recipients_str.split(",") if r.strip()]
+        return self._parse_recipient_list(recipients_str)
+
+    def get_email_recipients(self, category: str) -> EmailRecipients:
+        """
+        Get structured TO/CC/BCC recipients for category.
+
+        Args:
+            category: One of "Health", "Dental", or "Group Life"
+
+        Returns:
+            EmailRecipients with to, cc, and bcc lists populated
+        """
+        # Map category to field prefixes
+        field_map = {
+            "Health": ("report_recipients_health", "report_recipients_health_cc", "report_recipients_health_bcc"),
+            "Dental": ("report_recipients_dental", "report_recipients_dental_cc", "report_recipients_dental_bcc"),
+            "Group Life": ("report_recipients_group_life", "report_recipients_group_life_cc", "report_recipients_group_life_bcc"),
+        }
+
+        fields = field_map.get(category)
+        if not fields:
+            return EmailRecipients(to=[], cc=[], bcc=[])
+
+        to_field, cc_field, bcc_field = fields
+        return EmailRecipients(
+            to=self._parse_recipient_list(getattr(self, to_field, "")),
+            cc=self._parse_recipient_list(getattr(self, cc_field, "")),
+            bcc=self._parse_recipient_list(getattr(self, bcc_field, "")),
+        )
 
     def is_azure_openai_configured(self) -> bool:
         """Check if Azure OpenAI is fully configured."""
