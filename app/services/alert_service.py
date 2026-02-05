@@ -82,7 +82,9 @@ class CriticalAlertService:
         )
 
         # Load the Critical news items for each insurer
+        # Expunge insurers first to avoid ORM relationship side effects
         for insurer in critical_insurers:
+            db_session.expunge(insurer)
             insurer.news_items = (
                 db_session.query(NewsItem)
                 .filter(

@@ -197,7 +197,9 @@ class ReportService:
         )
 
         # Load news items for each insurer
+        # Expunge insurers first to avoid ORM relationship side effects
         for insurer in insurers:
+            db_session.expunge(insurer)
             insurer.news_items = (
                 db_session.query(NewsItem)
                 .filter(
@@ -444,7 +446,10 @@ class ReportService:
         )
 
         # Load news items for each insurer
+        # Expunge insurers first to avoid ORM relationship side effects
+        # when assigning news_items (which could orphan items from other runs)
         for insurer in insurers:
+            db_session.expunge(insurer)
             insurer.news_items = (
                 db_session.query(NewsItem)
                 .filter(
