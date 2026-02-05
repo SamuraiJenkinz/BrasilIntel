@@ -826,7 +826,7 @@ async def admin_schedules(
         # Get latest run for this category
         latest_run = db.query(Run).filter(
             Run.category == cat
-        ).order_by(Run.created_at.desc()).first()
+        ).order_by(Run.started_at.desc()).first()
 
         schedules_data.append({
             "category": cat,
@@ -896,7 +896,7 @@ async def admin_toggle_schedule(
     config = settings.get_schedule_config(normalized)
     latest_run = db.query(Run).filter(
         Run.category == normalized
-    ).order_by(Run.created_at.desc()).first()
+    ).order_by(Run.started_at.desc()).first()
 
     return templates.TemplateResponse(
         "admin/partials/schedule_card.html",
