@@ -6,16 +6,21 @@ Serves HTML pages using Jinja2 templates.
 """
 import uuid
 from datetime import datetime, timedelta
+from io import BytesIO
 
 from fastapi import APIRouter, Depends, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
+from app.config import get_settings, Settings
 from app.dependencies import get_db, verify_admin
 from app.models.insurer import Insurer
+from app.models.run import Run
 from app.services.excel_service import parse_excel_insurers
+from app.services.scheduler_service import SchedulerService
+from app.services.report_archiver import ReportArchiver
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -35,34 +40,326 @@ def cleanup_expired_sessions() -> None:
         del import_sessions[k]
 
 
+# ----- Template Filters -----
+
+def format_datetime(value) -> str:
+    """Format datetime for display."""
+    if not value:
+        return "Never"
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return value
+    return value.strftime("%d/%m/%Y %H:%M")
+
+
+def timeago(value) -> str:
+    """Convert datetime to relative time string."""
+    if not value:
+        return "Never"
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return value
+
+    # Handle timezone-aware datetimes
+    now = datetime.now()
+    if value.tzinfo is not None:
+        value = value.replace(tzinfo=None)
+
+    delta = now - value
+
+    if delta < timedelta(minutes=1):
+        return "Just now"
+    elif delta < timedelta(hours=1):
+        minutes = int(delta.seconds / 60)
+        return f"{minutes} min ago"
+    elif delta < timedelta(days=1):
+        hours = int(delta.seconds / 3600)
+        return f"{hours} hours ago"
+    else:
+        return f"{delta.days} days ago"
+
+
+def status_color(status) -> str:
+    """Map status to Bootstrap color class."""
+    colors = {
+        "completed": "success",
+        "failed": "danger",
+        "running": "primary",
+        "pending": "secondary",
+        "healthy": "success",
+        "warning": "warning",
+        "error": "danger",
+        "sent": "success",
+        "skipped": "secondary",
+    }
+    return colors.get(str(status).lower(), "secondary")
+
+
+# Register filters with templates
+templates.env.filters["format_datetime"] = format_datetime
+templates.env.filters["timeago"] = timeago
+templates.env.filters["status_color"] = status_color
+
+
+# ----- Helper Functions -----
+
+def get_category_stats(db: Session, category: str) -> dict:
+    """
+    Get statistics for a category.
+
+    Args:
+        db: Database session
+        category: Category name (Health, Dental, Group Life)
+
+    Returns:
+        Dictionary with insurer_count, last_run info, next_run, enabled
+    """
+    # Get insurer count for category (enabled only)
+    insurer_count = db.query(func.count(Insurer.id)).filter(
+        Insurer.category == category,
+        Insurer.enabled == True
+    ).scalar() or 0
+
+    # Get latest run for category
+    last_run = db.query(Run).filter(
+        Run.category == category
+    ).order_by(Run.started_at.desc()).first()
+
+    last_run_info = None
+    if last_run:
+        last_run_info = {
+            "id": last_run.id,
+            "status": last_run.status,
+            "time": last_run.started_at,
+            "insurers_processed": last_run.insurers_processed or 0,
+            "items_found": last_run.items_found or 0,
+        }
+
+    # Get schedule info from SchedulerService
+    scheduler = SchedulerService()
+    schedule = scheduler.get_schedule(category)
+
+    next_run = None
+    enabled = True
+    if schedule:
+        next_run = schedule.get("next_run_time")
+        enabled = not schedule.get("paused", False)
+
+    return {
+        "category": category,
+        "insurer_count": insurer_count,
+        "last_run": last_run_info,
+        "next_run": next_run,
+        "enabled": enabled,
+    }
+
+
+def get_system_health(settings: Settings) -> dict:
+    """
+    Get overall system health status.
+
+    Returns:
+        Dictionary with status (healthy/warning/error) and service details
+    """
+    services = {}
+    issues = []
+
+    # Check database (if we got here, it's working)
+    services["database"] = {"status": "healthy", "message": "Connected"}
+
+    # Check scheduler
+    scheduler = SchedulerService()
+    if scheduler.is_running:
+        services["scheduler"] = {"status": "healthy", "message": "Running"}
+    else:
+        services["scheduler"] = {"status": "warning", "message": "Not running"}
+        issues.append("Scheduler not running")
+
+    # Check Azure OpenAI
+    if settings.is_azure_openai_configured():
+        services["azure_openai"] = {"status": "healthy", "message": "Configured"}
+    else:
+        services["azure_openai"] = {"status": "warning", "message": "Not configured"}
+        issues.append("Azure OpenAI not configured")
+
+    # Check Graph Email
+    if settings.is_graph_configured():
+        services["graph_email"] = {"status": "healthy", "message": "Configured"}
+    else:
+        services["graph_email"] = {"status": "warning", "message": "Not configured"}
+        issues.append("Graph Email not configured")
+
+    # Check Apify
+    if settings.is_apify_configured():
+        services["apify"] = {"status": "healthy", "message": "Configured"}
+    else:
+        services["apify"] = {"status": "warning", "message": "Not configured"}
+        issues.append("Apify not configured")
+
+    # Determine overall status
+    error_count = sum(1 for s in services.values() if s["status"] == "error")
+    warning_count = sum(1 for s in services.values() if s["status"] == "warning")
+
+    if error_count > 0:
+        overall = "error"
+    elif warning_count > 0:
+        overall = "warning"
+    else:
+        overall = "healthy"
+
+    return {
+        "status": overall,
+        "services": services,
+        "issues": issues,
+    }
+
+
+def get_recent_reports(limit: int = 5) -> list[dict]:
+    """
+    Get recent archived reports.
+
+    Args:
+        limit: Maximum number of reports to return
+
+    Returns:
+        List of report metadata dicts with date, category, filename, view_url
+    """
+    archiver = ReportArchiver()
+    reports = archiver.browse_reports(limit=limit)
+
+    result = []
+    for report in reports:
+        result.append({
+            "date": report.get("date", ""),
+            "category": report.get("category", ""),
+            "filename": report.get("filename", ""),
+            "timestamp": report.get("timestamp", ""),
+            "view_url": f"/api/reports/archive/{report.get('date', '')}/{report.get('filename', '')}",
+            "size_kb": report.get("size_kb", 0),
+        })
+
+    return result
+
+
+# ----- Dashboard Routes -----
+
 @router.get("/", response_class=HTMLResponse, name="admin_dashboard")
 @router.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(
     request: Request,
-    username: str = Depends(verify_admin)
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings)
 ) -> HTMLResponse:
     """
     Admin dashboard page.
 
-    Shows system overview with run statistics, recent activity,
-    and quick actions. Content detailed in Plan 08-02.
+    Shows system overview with category cards, system status,
+    and recent reports list.
+
+    Args:
+        request: FastAPI request object
+        username: Authenticated admin username
+        db: Database session
+        settings: Application settings
+
+    Returns:
+        Rendered dashboard HTML page
+    """
+    # Gather data for all categories
+    categories = ["Health", "Dental", "Group Life"]
+    category_stats = {cat: get_category_stats(db, cat) for cat in categories}
+
+    # Get system health
+    system_health = get_system_health(settings)
+
+    # Get recent reports
+    recent_reports = get_recent_reports(limit=5)
+
+    return templates.TemplateResponse(
+        "admin/dashboard.html",
+        {
+            "request": request,
+            "username": username,
+            "active": "dashboard",
+            "categories": categories,
+            "category_stats": category_stats,
+            "system_health": system_health,
+            "recent_reports": recent_reports,
+        }
+    )
+
+
+@router.get("/dashboard/card/{category}", response_class=HTMLResponse, name="admin_dashboard_card")
+async def dashboard_card(
+    request: Request,
+    category: str,
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> HTMLResponse:
+    """
+    HTMX partial for category card refresh.
+
+    Args:
+        request: FastAPI request object
+        category: Category name (Health, Dental, Group Life)
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        Rendered category card partial
+    """
+    # Normalize category name
+    category_map = {
+        "health": "Health",
+        "dental": "Dental",
+        "group_life": "Group Life",
+        "group life": "Group Life",
+    }
+    normalized = category_map.get(category.lower(), category)
+
+    stats = get_category_stats(db, normalized)
+
+    return templates.TemplateResponse(
+        "admin/partials/category_card.html",
+        {
+            "request": request,
+            "stats": stats,
+        }
+    )
+
+
+@router.get("/dashboard/reports", response_class=HTMLResponse, name="admin_dashboard_reports")
+async def dashboard_reports(
+    request: Request,
+    username: str = Depends(verify_admin)
+) -> HTMLResponse:
+    """
+    HTMX partial for recent reports list refresh.
 
     Args:
         request: FastAPI request object
         username: Authenticated admin username
 
     Returns:
-        Rendered dashboard HTML page
+        Rendered recent reports partial
     """
+    recent_reports = get_recent_reports(limit=5)
+
     return templates.TemplateResponse(
-        "admin/dashboard.html",
+        "admin/partials/recent_reports.html",
         {
             "request": request,
-            "username": username,
-            "active": "dashboard"
+            "reports": recent_reports,
         }
     )
 
+
+# ----- Insurers Routes -----
 
 @router.get("/insurers", response_class=HTMLResponse, name="admin_insurers")
 async def insurers(
@@ -216,6 +513,8 @@ async def admin_bulk_disable(
     )
 
 
+# ----- Import Routes -----
+
 @router.get("/import", response_class=HTMLResponse, name="admin_import")
 async def import_page(
     request: Request,
@@ -269,7 +568,6 @@ async def admin_import_preview(
     # Parse Excel file
     try:
         content = await file.read()
-        from io import BytesIO
         insurers_data, errors = parse_excel_insurers(BytesIO(content))
     except Exception as e:
         return templates.TemplateResponse(
@@ -366,6 +664,8 @@ async def admin_import_commit(
         ''')
 
 
+# ----- Other Admin Pages -----
+
 @router.get("/recipients", response_class=HTMLResponse, name="admin_recipients")
 async def recipients(
     request: Request,
@@ -415,7 +715,7 @@ async def schedules(
 
 
 @router.get("/settings", response_class=HTMLResponse, name="admin_settings")
-async def settings(
+async def settings_page(
     request: Request,
     username: str = Depends(verify_admin)
 ) -> HTMLResponse:

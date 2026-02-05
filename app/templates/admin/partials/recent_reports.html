@@ -1,0 +1,26 @@
+<!-- Recent reports list partial for HTMX refresh -->
+{% if reports %}
+<div class="list-group list-group-flush">
+    {% for report in reports %}
+    <a href="{{ report.view_url }}" target="_blank"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div>
+            <span class="badge bg-secondary me-2">{{ report.date }}</span>
+            <span class="fw-medium">{{ report.category }}</span>
+            {% if report.size_kb %}
+            <small class="text-muted ms-2">({{ report.size_kb }} KB)</small>
+            {% endif %}
+        </div>
+        <span class="text-muted small">
+            <i class="bi bi-box-arrow-up-right"></i>
+        </span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-4 text-muted">
+    <i class="bi bi-file-earmark-x fs-3 mb-2 d-block"></i>
+    <span>No reports yet</span>
+    <p class="small mb-0 mt-2">Reports will appear here after running a category</p>
+</div>
+{% endif %}

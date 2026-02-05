@@ -7,16 +7,147 @@
     <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
 </div>
 
-<div class="row">
-    <div class="col-12">
+<!-- Category Cards Row -->
+<div class="row mb-4">
+    {% for category in categories %}
+    <div class="col-md-4 mb-3"
+         hx-get="/admin/dashboard/card/{{ category }}"
+         hx-trigger="load, every 60s"
+         hx-swap="innerHTML">
+        <!-- Initial content rendered inline for first load -->
+        {% set stats = category_stats[category] %}
+        {% include "admin/partials/category_card.html" %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- System Status Section -->
+<div class="row mb-4">
+    <div class="col-md-6">
         <div class="card">
+            <div class="card-header">
+                <i class="bi bi-activity me-2"></i>System Status
+                <span class="badge bg-{{ system_health.status|status_color }} ms-2">
+                    {{ system_health.status|capitalize }}
+                </span>
+            </div>
             <div class="card-body">
-                <p class="text-muted mb-0">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Dashboard content coming in Plan 08-02.
-                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service_name, service in system_health.services.items() %}
+                            <tr>
+                                <td>
+                                    {% if service_name == "database" %}
+                                    <i class="bi bi-database me-1"></i>Database
+                                    {% elif service_name == "scheduler" %}
+                                    <i class="bi bi-clock me-1"></i>Scheduler
+                                    {% elif service_name == "azure_openai" %}
+                                    <i class="bi bi-cpu me-1"></i>Azure OpenAI
+                                    {% elif service_name == "graph_email" %}
+                                    <i class="bi bi-envelope me-1"></i>Graph Email
+                                    {% elif service_name == "apify" %}
+                                    <i class="bi bi-cloud me-1"></i>Apify
+                                    {% else %}
+                                    {{ service_name }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ service.status|status_color }}">
+                                        {{ service.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ service.message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if system_health.issues %}
+                <div class="alert alert-warning mt-3 mb-0 py-2">
+                    <small>
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        {{ system_health.issues|length }} issue(s) detected. Check Settings for configuration.
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports Section -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-text me-2"></i>Recent Reports</span>
+                <span class="htmx-indicator">
+                    <span class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </span>
+                </span>
+            </div>
+            <div class="card-body p-0"
+                 hx-get="/admin/dashboard/reports"
+                 hx-trigger="load, every 300s"
+                 hx-swap="innerHTML">
+                <!-- Initial content -->
+                {% include "admin/partials/recent_reports.html" with context %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>Quick Actions
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('admin_insurers') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-building me-1"></i>Manage Insurers
+                    </a>
+                    <a href="{{ url_for('admin_import') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-upload me-1"></i>Import Data
+                    </a>
+                    <a href="{{ url_for('admin_schedules') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-check me-1"></i>View Schedules
+                    </a>
+                    <a href="/api/reports/preview" target="_blank" class="btn btn-outline-secondary">
+                        <i class="bi bi-eye me-1"></i>Preview Report Template
+                    </a>
+                    <a href="/docs" target="_blank" class="btn btn-outline-secondary">
+                        <i class="bi bi-code-slash me-1"></i>API Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle HTMX events for Run Now button
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.pathInfo && evt.detail.pathInfo.requestPath.includes('/trigger')) {
+        // Refresh all category cards after a trigger
+        setTimeout(function() {
+            document.querySelectorAll('[hx-get*="/admin/dashboard/card/"]').forEach(function(el) {
+                htmx.trigger(el, 'htmx:load');
+            });
+        }, 2000);
+    }
+});
+</script>
 {% endblock %}

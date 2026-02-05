@@ -1,0 +1,75 @@
+<!-- Category card partial for HTMX refresh -->
+<div class="card h-100" id="card-{{ stats.category|lower|replace(' ', '_') }}">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">
+            {% if stats.category == "Health" %}
+            <i class="bi bi-heart-pulse me-2 text-danger"></i>
+            {% elif stats.category == "Dental" %}
+            <i class="bi bi-emoji-smile me-2 text-info"></i>
+            {% else %}
+            <i class="bi bi-people me-2 text-primary"></i>
+            {% endif %}
+            {{ stats.category }}
+        </span>
+        {% if stats.enabled %}
+        <span class="badge bg-success">Enabled</span>
+        {% else %}
+        <span class="badge bg-secondary">Paused</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <!-- Insurer count -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted">Insurers</span>
+                <span class="fw-bold fs-4">{{ stats.insurer_count }}</span>
+            </div>
+        </div>
+
+        <!-- Last run -->
+        <div class="mb-3">
+            <div class="small text-muted mb-1">Last Run</div>
+            {% if stats.last_run %}
+            <div class="d-flex justify-content-between align-items-center">
+                <span title="{{ stats.last_run.time|format_datetime }}">
+                    {{ stats.last_run.time|timeago }}
+                </span>
+                <span class="badge bg-{{ stats.last_run.status|status_color }}">
+                    {{ stats.last_run.status|capitalize }}
+                </span>
+            </div>
+            <div class="small text-muted mt-1">
+                {{ stats.last_run.insurers_processed }} insurers, {{ stats.last_run.items_found }} news items
+            </div>
+            {% else %}
+            <span class="text-muted">No runs yet</span>
+            {% endif %}
+        </div>
+
+        <!-- Next run -->
+        <div class="mb-3">
+            <div class="small text-muted mb-1">Next Run</div>
+            {% if stats.enabled and stats.next_run %}
+            <span title="{{ stats.next_run|format_datetime }}">
+                {{ stats.next_run|format_datetime }}
+            </span>
+            {% elif not stats.enabled %}
+            <span class="text-warning">Paused</span>
+            {% else %}
+            <span class="text-muted">Not scheduled</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-footer bg-transparent">
+        <button class="btn btn-marsh btn-sm w-100"
+                hx-post="/api/schedules/{{ stats.category }}/trigger"
+                hx-swap="none"
+                hx-confirm="Run {{ stats.category }} category now?"
+                hx-on::after-request="if(event.detail.successful) {
+                    htmx.trigger('#card-{{ stats.category|lower|replace(' ', '_') }}', 'htmx:trigger');
+                    alert('Run triggered for {{ stats.category }}');
+                }">
+            <i class="bi bi-play-fill me-1"></i>Run Now
+        </button>
+    </div>
+</div>
