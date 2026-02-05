@@ -4,14 +4,14 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** Phase 8 Plan 05 COMPLETE - Recipients and Schedules pages with HTMX toggle controls
+**Current focus:** PROJECT COMPLETE - All 8 phases and 36 plans executed
 
 ## Current Position
-Phase: 8 of 8 (Admin Interface) - IN PROGRESS
-Plan: 5 of 6
-Status: In Progress
-Progress: [█████████░] 97.2% (35/36 plans complete)
-Last activity: 2026-02-04 - Completed 08-05 Recipients and Schedules Pages
+Phase: 8 of 8 (Admin Interface) - COMPLETE
+Plan: 6 of 6
+Status: Complete
+Progress: [██████████] 100% (36/36 plans complete)
+Last activity: 2026-02-05 - Completed 08-06 Settings Page - PROJECT COMPLETE
 
 ## Performance Metrics
 
@@ -156,6 +156,9 @@ Recent decisions affecting current work:
 - Schedule card partial enables zero-refresh toggle updates (08-05)
 - Toggle endpoint returns partial HTML for HTMX swap (08-05)
 - Trigger endpoint returns inline HTML feedback span (08-05)
+- mask_key() helper with configurable visible characters for API key masking (08-06)
+- Password input with reveal toggle for secure key display (08-06)
+- Read-only settings display with env var reference table (08-06)
 
 ### Pending Todos
 
@@ -320,9 +323,9 @@ None yet.
 
 **Next:** Phase 8 - Admin Interface
 
-## Phase 8 Progress - IN PROGRESS
+## Phase 8 Progress - COMPLETE
 
-**Plans complete: 5 of 6**
+**Plans complete: 6 of 6**
 
 | Plan | Name | Status |
 |------|------|--------|
@@ -333,7 +336,7 @@ None yet.
 | 08-05 | Recipients & Schedules | DONE |
 | 08-06 | Settings Page | DONE |
 
-**Requirements addressed:**
+**Requirements fulfilled:**
 - ADMN-01: Web dashboard accessible (08-01, 08-02)
 - ADMN-02: Basic authentication for admin pages (08-01)
 - ADMN-03: Category summary cards with insurer count, run status (08-02)
@@ -349,14 +352,18 @@ None yet.
 - ADMN-13: Manual trigger button (08-05)
 - ADMN-14: Company branding display (08-06)
 - ADMN-15: Scraping configuration display (08-06)
-- ADMN-16: Masked API keys (08-06)
+- ADMN-16: Masked API keys with reveal toggle (08-06)
 
-**Next:** Phase 8 COMPLETE - All plans done
+**Phase 8 COMPLETE - All ADMN requirements fulfilled**
+
+## PROJECT COMPLETE
+
+All 8 phases and 36 plans have been successfully executed. BrasilIntel is feature-complete.
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Completed 08-05 Recipients and Schedules Pages
+Last session: 2026-02-05
+Stopped at: PROJECT COMPLETE - All 36 plans executed
 Resume file: None
 
 ### What's Available Now
@@ -524,4 +531,5 @@ From Phase 8 (in progress):
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-05*
+*Project completed: 2026-02-05*
