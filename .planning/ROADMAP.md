@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: News Collection Scale** - All sources, 897 insurers, production scraping
 - [x] **Phase 4: AI Classification Pipeline** - Full Azure OpenAI classification system
 - [x] **Phase 5: Professional Reporting** - Marsh-branded HTML reports with all sections
-- [ ] **Phase 6: Delivery & Critical Alerts** - Email delivery, PDF generation, alert routing
+- [x] **Phase 6: Delivery & Critical Alerts** - Email delivery, PDF generation, alert routing
 - [ ] **Phase 7: Scheduling & Automation** - APScheduler jobs, cron config, run tracking
 - [ ] **Phase 8: Admin Interface** - Complete web dashboard with all management pages
 
@@ -137,11 +137,11 @@ Plans:
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — Delivery schemas and config extension (CC/BCC, Run tracking fields)
-- [ ] 06-02-PLAN.md — PDF generation service with WeasyPrint
-- [ ] 06-03-PLAN.md — Email service enhancement with PDF attachment support
-- [ ] 06-04-PLAN.md — Critical alert service for immediate notifications
-- [ ] 06-05-PLAN.md — Run orchestration integration and delivery tracking
+- [x] 06-01-PLAN.md — Delivery schemas and config extension (CC/BCC, Run tracking fields)
+- [x] 06-02-PLAN.md — PDF generation service with WeasyPrint
+- [x] 06-03-PLAN.md — Email service enhancement with PDF attachment support
+- [x] 06-04-PLAN.md — Critical alert service for immediate notifications
+- [x] 06-05-PLAN.md — Run orchestration integration and delivery tracking
 
 ### Phase 7: Scheduling & Automation
 **Goal**: Automated daily runs with APScheduler, configurable cron, manual triggers, and run tracking
@@ -192,7 +192,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. News Collection Scale | 6/6 | Complete | 2026-02-04 |
 | 4. AI Classification Pipeline | 2/2 | Complete | 2026-02-04 |
 | 5. Professional Reporting | 5/5 | Complete | 2026-02-04 |
-| 6. Delivery & Critical Alerts | 0/5 | Not started | - |
+| 6. Delivery & Critical Alerts | 5/5 | Complete | 2026-02-04 |
 | 7. Scheduling & Automation | 0/TBD | Not started | - |
 | 8. Admin Interface | 0/TBD | Not started | - |
 

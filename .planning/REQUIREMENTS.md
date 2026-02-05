@@ -59,13 +59,13 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Delivery
 
 - [x] **DELV-01**: System sends reports via Microsoft Graph API (Exchange Online)
-- [ ] **DELV-02**: Email supports TO, CC, BCC recipient lists per category
-- [ ] **DELV-03**: Recipients configurable per product category (Health, Dental, Group Life)
-- [ ] **DELV-04**: System sends immediate alert email when Critical status detected
-- [ ] **DELV-05**: Critical alerts sent separately from daily digest
-- [ ] **DELV-06**: System generates PDF version of each report
-- [ ] **DELV-07**: PDF attached to email or available for download
-- [ ] **DELV-08**: System tracks email delivery status per run
+- [x] **DELV-02**: Email supports TO, CC, BCC recipient lists per category
+- [x] **DELV-03**: Recipients configurable per product category (Health, Dental, Group Life)
+- [x] **DELV-04**: System sends immediate alert email when Critical status detected
+- [x] **DELV-05**: Critical alerts sent separately from daily digest
+- [x] **DELV-06**: System generates PDF version of each report
+- [x] **DELV-07**: PDF attached to email or available for download
+- [x] **DELV-08**: System tracks email delivery status per run
 
 ### Scheduling
 
@@ -191,13 +191,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REPT-12 | Phase 5 | Pending |
 | REPT-13 | Phase 5 | Pending |
 | DELV-01 | Phase 2 | Complete |
-| DELV-02 | Phase 6 | Pending |
-| DELV-03 | Phase 6 | Pending |
-| DELV-04 | Phase 6 | Pending |
-| DELV-05 | Phase 6 | Pending |
-| DELV-06 | Phase 6 | Pending |
-| DELV-07 | Phase 6 | Pending |
-| DELV-08 | Phase 6 | Pending |
+| DELV-02 | Phase 6 | Complete |
+| DELV-03 | Phase 6 | Complete |
+| DELV-04 | Phase 6 | Complete |
+| DELV-05 | Phase 6 | Complete |
+| DELV-06 | Phase 6 | Complete |
+| DELV-07 | Phase 6 | Complete |
+| DELV-08 | Phase 6 | Complete |
 | SCHD-01 | Phase 7 | Pending |
 | SCHD-02 | Phase 7 | Pending |
 | SCHD-03 | Phase 7 | Pending |
