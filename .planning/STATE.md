@@ -8,10 +8,10 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 Phase: 7 of 8 (Scheduling & Automation)
-Plan: 2 of 4
+Plan: 3 of 4
 Status: In Progress
-Progress: [████████░░] 82.9% (29/35 plans complete)
-Last activity: 2026-02-04 - Completed 07-02 Schedule Schemas & Run Model Enhancement
+Progress: [████████░░] 85.7% (30/35 plans complete)
+Last activity: 2026-02-05 - Completed 07-03 Schedule API Router
 
 ## Performance Metrics
 
@@ -139,6 +139,10 @@ Recent decisions affecting current work:
 - Schedule schemas define API contracts for schedule management (07-02)
 - Run model tracks scheduled job metadata (scheduled_job_id, scheduled_time, actual_start_delay_seconds) (07-02)
 - RunRead schema includes all scheduled and delivery tracking fields (07-02)
+- Router prefix /api/schedules with no additional prefix in main.py (07-03)
+- _schedule_dict_to_info helper maps paused->enabled (inverted) for schema compatibility (07-03)
+- Case-insensitive category validation with normalization (07-03)
+- Scheduler starts on app startup via lifespan hooks, stops on shutdown (07-03)
 
 ### Pending Todos
 
@@ -283,19 +287,19 @@ None yet.
 
 ## Phase 7 Progress - IN PROGRESS
 
-**Plans complete: 2 of 4**
+**Plans complete: 3 of 4**
 
 | Plan | Name | Status |
 |------|------|--------|
 | 07-01 | SchedulerService Core | DONE |
 | 07-02 | Schedule Schemas & Run Model | DONE |
-| 07-03 | Schedule API Router | PENDING |
-| 07-04 | FastAPI Integration | PENDING |
+| 07-03 | Schedule API Router | DONE |
+| 07-04 | Integration Testing | PENDING |
 
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 07-01 SchedulerService Core
+Stopped at: Completed 07-03 Schedule API Router
 Resume file: None
 
 ### What's Available Now
@@ -413,6 +417,16 @@ From Phase 7 (in progress):
 - `app.models.run.Run.scheduled_time` - Originally scheduled time (07-02)
 - `app.models.run.Run.actual_start_delay_seconds` - Delay from scheduled to actual start (07-02)
 - `app.schemas.run.RunRead` - Full field alignment with Run model (07-02)
+- `app.routers.schedules.router` - Schedule management API (07-03)
+- `GET /api/schedules` - List all category schedules (07-03)
+- `GET /api/schedules/health` - Scheduler health status (07-03)
+- `GET /api/schedules/{category}` - Get individual schedule (07-03)
+- `PUT /api/schedules/{category}` - Update schedule config (07-03)
+- `POST /api/schedules/{category}/trigger` - Trigger immediate run (07-03)
+- `POST /api/schedules/{category}/pause` - Pause scheduled job (07-03)
+- `POST /api/schedules/{category}/resume` - Resume paused job (07-03)
+- `SchedulerService.get_health_status()` - Returns scheduler running state and next jobs (07-03)
+- `/api/health` includes scheduler status check (07-03)
 
 ---
 *Initialized: 2026-02-04*
