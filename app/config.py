@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     # Azure OpenAI
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
+    azure_openai_key: str = ""  # Alias for azure_openai_api_key
     azure_openai_deployment: str = "gpt-4o"
     azure_openai_api_version: str = "2024-08-01-preview"
     use_llm_summary: bool = True
@@ -135,12 +136,15 @@ class Settings(BaseSettings):
             bcc=self._parse_recipient_list(getattr(self, bcc_field, "")),
         )
 
+    def get_azure_openai_key(self) -> str:
+        """Get Azure OpenAI API key (supports both field names)."""
+        return self.azure_openai_api_key or self.azure_openai_key
+
     def is_azure_openai_configured(self) -> bool:
         """Check if Azure OpenAI is fully configured."""
         return bool(
             self.azure_openai_endpoint
-            and self.azure_openai_api_key
-            and self.azure_openai_deployment
+            and self.get_azure_openai_key()
         )
 
     def is_graph_configured(self) -> bool:

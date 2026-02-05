@@ -3,11 +3,13 @@ Azure OpenAI classification service for insurer news analysis.
 
 Uses structured outputs with Pydantic models to ensure consistent
 classification responses. All summaries generated in Portuguese.
+
+Supports both standard Azure OpenAI endpoints and corporate proxy endpoints.
 """
 import logging
 from typing import Any
 
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 
 from app.config import get_settings
 from app.schemas.classification import NewsClassification, InsurerClassification
@@ -68,12 +70,35 @@ class ClassificationService:
             self.client = None
             self.model = None
         else:
-            self.client = AzureOpenAI(
-                azure_endpoint=settings.azure_openai_endpoint,
-                api_key=settings.azure_openai_api_key,
-                api_version=settings.azure_openai_api_version,
-            )
-            self.model = settings.azure_openai_deployment
+            endpoint = settings.azure_openai_endpoint
+            api_key = settings.get_azure_openai_key()
+
+            # Detect corporate proxy URL format (contains full path to chat/completions)
+            if "/deployments/" in endpoint and "/chat/completions" in endpoint:
+                # Extract base URL and deployment from full proxy URL
+                # Format: .../v1/deployments/{deployment}/chat/completions
+                import re
+                match = re.search(r"(.+/v1)/deployments/([^/]+)/chat/completions", endpoint)
+                if match:
+                    base_url = match.group(1)
+                    self.model = match.group(2)
+                    logger.info(f"Using proxy endpoint: {base_url}, deployment: {self.model}")
+                    self.client = OpenAI(
+                        base_url=base_url,
+                        api_key=api_key,
+                    )
+                else:
+                    logger.error(f"Could not parse proxy endpoint: {endpoint}")
+                    self.client = None
+                    self.model = None
+            else:
+                # Standard Azure OpenAI endpoint
+                self.client = AzureOpenAI(
+                    azure_endpoint=endpoint,
+                    api_key=api_key,
+                    api_version=settings.azure_openai_api_version,
+                )
+                self.model = settings.azure_openai_deployment
 
         self.use_llm = settings.use_llm_summary
 
