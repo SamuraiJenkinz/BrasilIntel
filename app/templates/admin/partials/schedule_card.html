@@ -1,0 +1,64 @@
+<div class="card" id="schedule-{{ index }}">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-clock me-2"></i>{{ schedule.category }}
+        </h5>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   id="toggle-{{ index }}"
+                   {% if schedule.enabled %}checked{% endif %}
+                   hx-post="{{ url_for('admin_toggle_schedule', category=schedule.category) }}"
+                   hx-vals='{"enabled": {{ "false" if schedule.enabled else "true" }}}'
+                   hx-target="#schedule-{{ index }}"
+                   hx-swap="outerHTML">
+            <label class="form-check-label" for="toggle-{{ index }}">
+                {% if schedule.enabled %}
+                <span class="text-success">Enabled</span>
+                {% else %}
+                <span class="text-muted">Paused</span>
+                {% endif %}
+            </label>
+        </div>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-4">Cron:</dt>
+            <dd class="col-8"><code>{{ schedule.cron_expression }}</code></dd>
+
+            <dt class="col-4">Next Run:</dt>
+            <dd class="col-8">
+                {% if schedule.enabled and schedule.next_run_time %}
+                {{ schedule.next_run_time|format_datetime }}
+                {% elif not schedule.enabled %}
+                <span class="text-muted fst-italic">Paused</span>
+                {% else %}
+                <span class="text-muted fst-italic">Not scheduled</span>
+                {% endif %}
+            </dd>
+
+            <dt class="col-4">Last Run:</dt>
+            <dd class="col-8">
+                {% if schedule.last_run %}
+                {{ schedule.last_run.created_at|format_datetime }}
+                <span class="badge bg-{{ schedule.last_run.status|status_color }}">
+                    {{ schedule.last_run.status }}
+                </span>
+                {% else %}
+                <span class="text-muted fst-italic">Never</span>
+                {% endif %}
+            </dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-sm btn-marsh"
+                hx-post="{{ url_for('admin_trigger_run', category=schedule.category) }}"
+                hx-indicator="#trigger-spinner-{{ index }}"
+                hx-target="#trigger-result-{{ index }}"
+                hx-swap="innerHTML">
+            <span id="trigger-spinner-{{ index }}"
+                  class="htmx-indicator spinner-border spinner-border-sm me-1"></span>
+            <i class="bi bi-play-fill me-1"></i>Run Now
+        </button>
+        <span id="trigger-result-{{ index }}" class="ms-2"></span>
+    </div>
+</div>

@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% block title %}Schedules{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-calendar-check me-2"></i>Schedules</h2>
+    <p class="text-muted mb-0">Manage automated report generation schedules.</p>
+</div>
+
+<div class="row" id="schedule-cards">
+    {% for schedule in schedules %}
+    <div class="col-md-4 mb-3">
+        {% set index = schedule.category|lower|replace(" ", "-") %}
+        {% include "admin/partials/schedule_card.html" %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-book me-2"></i>Cron Expression Reference
+    </div>
+    <div class="card-body">
+        <p class="mb-2">Cron expressions follow the format: <code>minute hour day-of-month month day-of-week</code></p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-3">
+                <thead>
+                    <tr>
+                        <th>Expression</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0 6 * * *</code></td>
+                        <td>Daily at 6:00 AM</td>
+                    </tr>
+                    <tr>
+                        <td><code>0 7 * * 1-5</code></td>
+                        <td>Weekdays at 7:00 AM</td>
+                    </tr>
+                    <tr>
+                        <td><code>0 8 * * 1</code></td>
+                        <td>Mondays at 8:00 AM</td>
+                    </tr>
+                    <tr>
+                        <td><code>30 9 * * *</code></td>
+                        <td>Daily at 9:30 AM</td>
+                    </tr>
+                    <tr>
+                        <td><code>0 */2 * * *</code></td>
+                        <td>Every 2 hours</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="alert alert-secondary mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Note:</strong> Modify schedules via environment variables:<br>
+            <code>SCHEDULE_HEALTH_CRON</code>, <code>SCHEDULE_DENTAL_CRON</code>, <code>SCHEDULE_GROUP_LIFE_CRON</code><br>
+            <span class="text-muted">All times are in Sao Paulo timezone (America/Sao_Paulo).</span>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-toggle-on me-2"></i>Enable/Disable Reference
+    </div>
+    <div class="card-body">
+        <p class="mb-2">Control whether schedules are enabled via environment variables:</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Cron Variable</th>
+                        <th>Enable Variable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Health</strong></td>
+                        <td><code>SCHEDULE_HEALTH_CRON</code></td>
+                        <td><code>SCHEDULE_HEALTH_ENABLED</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dental</strong></td>
+                        <td><code>SCHEDULE_DENTAL_CRON</code></td>
+                        <td><code>SCHEDULE_DENTAL_ENABLED</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Group Life</strong></td>
+                        <td><code>SCHEDULE_GROUP_LIFE_CRON</code></td>
+                        <td><code>SCHEDULE_GROUP_LIFE_ENABLED</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
