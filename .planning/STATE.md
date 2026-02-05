@@ -4,14 +4,14 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** Phase 7 COMPLETE - Ready for Phase 8
+**Current focus:** Phase 8 Plan 01 COMPLETE - Admin foundation with HTTP Basic Auth
 
 ## Current Position
-Phase: 7 of 8 (Scheduling & Automation) - COMPLETE
-Plan: 4 of 4
-Status: Phase Complete
-Progress: [█████████░] 88.6% (31/35 plans complete)
-Last activity: 2026-02-04 - Completed 07-04 Run History & Integration Tests
+Phase: 8 of 8 (Admin Interface) - IN PROGRESS
+Plan: 1 of 6
+Status: In Progress
+Progress: [█████████░] 91.4% (32/35 plans complete)
+Last activity: 2026-02-04 - Completed 08-01 Admin Foundation
 
 ## Performance Metrics
 
@@ -144,6 +144,10 @@ Recent decisions affecting current work:
 - _schedule_dict_to_info helper maps paused->enabled (inverted) for schema compatibility (07-03)
 - Case-insensitive category validation with normalization (07-03)
 - Scheduler starts on app startup via lifespan hooks, stops on shutdown (07-03)
+- HTTP Basic auth with secrets.compare_digest() for timing attack prevention (08-01)
+- Empty admin_password default forces env var configuration for security (08-01)
+- Jinja2 template inheritance for admin pages (08-01)
+- Named routes with url_for() for template navigation (08-01)
 
 ### Pending Todos
 
@@ -308,10 +312,29 @@ None yet.
 
 **Next:** Phase 8 - Admin Interface
 
+## Phase 8 Progress - IN PROGRESS
+
+**Plans complete: 1 of 6**
+
+| Plan | Name | Status |
+|------|------|--------|
+| 08-01 | Admin Foundation | DONE |
+| 08-02 | Dashboard Content | - |
+| 08-03 | Insurers Management | - |
+| 08-04 | Recipients Page | - |
+| 08-05 | Schedules Page | - |
+| 08-06 | Settings Page | - |
+
+**Requirements addressed:**
+- ADMN-01: Web dashboard accessible (partial, content in 08-02)
+- ADMN-02: Basic authentication for admin pages (08-01)
+
+**Next:** Plan 08-02 - Dashboard Content
+
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 7 Complete - Ready for Phase 8
+Stopped at: Completed 08-01 Admin Foundation
 Resume file: None
 
 ### What's Available Now
@@ -443,6 +466,16 @@ From Phase 7 (complete):
 - `GET /api/runs/latest` - Get latest run per category for dashboard (07-04)
 - `GET /api/runs/stats` - Run statistics by status, trigger_type, category (07-04)
 - `tests/test_scheduler_integration.py` - 27 integration tests for scheduler (07-04)
+
+From Phase 8 (in progress):
+- `app.dependencies.verify_admin` - HTTP Basic auth dependency for admin pages (08-01)
+- `app.dependencies.security` - HTTPBasic security scheme (08-01)
+- `app.config.admin_username, admin_password` - Admin credentials settings (08-01)
+- `app.routers.admin.router` - Admin router at /admin (08-01)
+- `app.templates/admin/base.html` - Marsh-branded base template (08-01)
+- `app.templates/admin/dashboard.html` - Dashboard placeholder (08-01)
+- `app.templates/admin/placeholder.html` - Generic page placeholder (08-01)
+- Named admin routes: admin_dashboard, admin_insurers, admin_import, admin_recipients, admin_schedules, admin_settings (08-01)
 
 ---
 *Initialized: 2026-02-04*
