@@ -8,14 +8,17 @@ import uuid
 from datetime import datetime, timedelta
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, Form, Request, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, Request, UploadFile, File, Cookie
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.config import get_settings, Settings
-from app.dependencies import get_db, verify_admin
+from app.dependencies import (
+    get_db, verify_admin, verify_credentials,
+    create_session_token, invalidate_session_token
+)
 from app.models.insurer import Insurer
 from app.models.run import Run
 from app.services.excel_service import parse_excel_insurers
@@ -243,6 +246,86 @@ def get_recent_reports(limit: int = 5) -> list[dict]:
         })
 
     return result
+
+
+# ----- Login/Logout Routes -----
+
+@router.get("/login", response_class=HTMLResponse, name="admin_login")
+async def login_page(
+    request: Request,
+    error: str = None
+) -> HTMLResponse:
+    """
+    Login page for admin dashboard.
+
+    Shows HTML form for username/password entry.
+    No authentication required to view this page.
+    """
+    return templates.TemplateResponse(
+        "admin/login.html",
+        {
+            "request": request,
+            "error": error,
+            "username": ""
+        }
+    )
+
+
+@router.post("/login", response_class=HTMLResponse, name="admin_login_post")
+async def login_submit(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    settings: Settings = Depends(get_settings)
+) -> RedirectResponse:
+    """
+    Handle login form submission.
+
+    Validates credentials and creates session cookie on success.
+    Redirects back to login with error on failure.
+    """
+    if verify_credentials(username, password, settings):
+        # Create session and set cookie
+        token = create_session_token(username)
+        response = RedirectResponse(url="/admin/", status_code=303)
+        response.set_cookie(
+            key="brasilintel_session",
+            value=token,
+            httponly=True,
+            max_age=86400,  # 24 hours
+            samesite="lax"
+        )
+        return response
+
+    # Invalid credentials - show error
+    return templates.TemplateResponse(
+        "admin/login.html",
+        {
+            "request": request,
+            "error": "Invalid username or password",
+            "username": username
+        },
+        status_code=401
+    )
+
+
+@router.get("/logout", name="admin_logout")
+async def logout(
+    request: Request,
+    session_token: str = Cookie(None, alias="brasilintel_session")
+) -> RedirectResponse:
+    """
+    Logout and clear session.
+
+    Invalidates session token and clears cookie.
+    Redirects to login page.
+    """
+    if session_token:
+        invalidate_session_token(session_token)
+
+    response = RedirectResponse(url="/admin/login", status_code=303)
+    response.delete_cookie("brasilintel_session")
+    return response
 
 
 # ----- Dashboard Routes -----

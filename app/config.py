@@ -77,7 +77,7 @@ class Settings(BaseSettings):
 
     # Admin interface settings (Phase 8)
     admin_username: str = "admin"
-    admin_password: str = ""  # Must be set via env var for security
+    admin_password: str = "admin"  # Default for development; override via ADMIN_PASSWORD env var
 
     # Scheduler settings (Phase 7)
     scheduler_enabled: bool = True
