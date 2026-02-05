@@ -75,6 +75,18 @@ class Settings(BaseSettings):
     relevance_keyword_threshold: int = 20  # Items below this skip AI scoring
     relevance_ai_batch_size: int = 10  # Items per AI scoring request
 
+    # Scheduler settings (Phase 7)
+    scheduler_enabled: bool = True
+    schedule_health_cron: str = "0 6 * * *"  # 6:00 AM Sao Paulo
+    schedule_dental_cron: str = "0 7 * * *"  # 7:00 AM Sao Paulo
+    schedule_group_life_cron: str = "0 8 * * *"  # 8:00 AM Sao Paulo
+    schedule_health_enabled: bool = True
+    schedule_dental_enabled: bool = True
+    schedule_group_life_enabled: bool = True
+    scheduler_misfire_grace_time: int = 3600  # 1 hour grace
+    scheduler_coalesce: bool = True  # Combine missed runs
+    scheduler_max_instances: int = 1  # Prevent overlap
+
     def _parse_recipient_list(self, recipients_str: str) -> list[str]:
         """Parse comma-separated email list, stripping whitespace."""
         if not recipients_str:
@@ -155,6 +167,32 @@ class Settings(BaseSettings):
             "cqcs": self.source_timeout_cqcs,
         }
         return timeout_map.get(source_name, self.scrape_timeout_seconds)
+
+    def get_schedule_config(self, category: str) -> dict:
+        """
+        Get schedule configuration for a category.
+
+        Args:
+            category: One of "Health", "Dental", or "Group Life"
+
+        Returns:
+            Dictionary with cron expression and enabled flag
+        """
+        config_map = {
+            "Health": {
+                "cron": self.schedule_health_cron,
+                "enabled": self.schedule_health_enabled,
+            },
+            "Dental": {
+                "cron": self.schedule_dental_cron,
+                "enabled": self.schedule_dental_enabled,
+            },
+            "Group Life": {
+                "cron": self.schedule_group_life_cron,
+                "enabled": self.schedule_group_life_enabled,
+            },
+        }
+        return config_map.get(category, {"cron": "0 6 * * *", "enabled": False})
 
 
 @lru_cache()

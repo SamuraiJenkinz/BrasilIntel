@@ -46,3 +46,7 @@ aiohttp>=3.9.0
 # Phase 6 - Delivery & Critical Alerts
 # PDF generation (requires GTK3 runtime on Windows)
 weasyprint>=63.1
+
+# Phase 7 - Scheduling & Automation
+APScheduler>=3.10.4
+tzdata>=2024.2  # Windows timezone data
