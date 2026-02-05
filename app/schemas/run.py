@@ -45,3 +45,19 @@ class RunRead(RunBase):
     insurers_processed: int
     items_found: int
     error_message: Optional[str] = None
+
+    # Delivery tracking (Phase 6)
+    email_status: Optional[str] = None
+    email_sent_at: Optional[datetime] = None
+    email_recipients_count: int = 0
+    email_error_message: Optional[str] = None
+    pdf_generated: bool = False
+    pdf_size_bytes: Optional[int] = None
+    critical_alert_sent: bool = False
+    critical_alert_sent_at: Optional[datetime] = None
+    critical_insurers_count: int = 0
+
+    # Scheduled job tracking (Phase 7)
+    scheduled_job_id: Optional[str] = None
+    scheduled_time: Optional[datetime] = None
+    actual_start_delay_seconds: Optional[int] = None
