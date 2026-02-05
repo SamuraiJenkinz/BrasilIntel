@@ -61,7 +61,7 @@ class GoogleNewsSource(NewsSource):
 
         run_input = {
             "queries": query,
-            "language": "BR:pt",  # Combined country:language format
+            "language": "BR:pt-419",  # Brazil Portuguese per actor API
             "maxItems": max_results,
             "timeRange": "1d",  # Last 24 hours
         }
