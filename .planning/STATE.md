@@ -287,15 +287,15 @@ None yet.
 
 | Plan | Name | Status |
 |------|------|--------|
-| 07-01 | Dependencies & Config | DONE |
+| 07-01 | SchedulerService Core | DONE |
 | 07-02 | Schedule Schemas & Run Model | DONE |
-| 07-03 | SchedulerService | PENDING |
-| 07-04 | Schedule API Router | PENDING |
+| 07-03 | Schedule API Router | PENDING |
+| 07-04 | FastAPI Integration | PENDING |
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Completed 07-02 Schedule Schemas & Run Model Enhancement
+Last session: 2026-02-05
+Stopped at: Completed 07-01 SchedulerService Core
 Resume file: None
 
 ### What's Available Now
@@ -395,6 +395,15 @@ From Phase 6 (complete):
 - Run orchestration integrated with critical alerts and PDF delivery (06-05)
 
 From Phase 7 (in progress):
+- `app.services.scheduler_service.SchedulerService` - APScheduler singleton (07-01)
+- `SchedulerService.start()` - Start scheduler with default jobs (07-01)
+- `SchedulerService.get_schedule()` - Get schedule info for category (07-01)
+- `SchedulerService.update_schedule()` - Reschedule jobs (07-01)
+- `SchedulerService.pause_job()` / `resume_job()` - Job control (07-01)
+- `SchedulerService.trigger_now()` - Manual immediate execution (07-01)
+- `app.config.Settings.scheduler_*` - Scheduler configuration settings (07-01)
+- `app.config.Settings.get_schedule_config()` - Category schedule lookup (07-01)
+- `tests/test_scheduler_service.py` - 16 unit tests for scheduler (07-01)
 - `app.schemas.schedule.ScheduleInfo` - Response model for schedule status (07-02)
 - `app.schemas.schedule.ScheduleUpdate` - Request model for modifying schedules (07-02)
 - `app.schemas.schedule.ScheduleList` - Response model for list of schedules (07-02)
@@ -407,4 +416,4 @@ From Phase 7 (in progress):
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-05*
