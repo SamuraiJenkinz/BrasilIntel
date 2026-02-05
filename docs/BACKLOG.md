@@ -34,6 +34,11 @@
 
 ### Admin UI Enhancements
 
+- [ ] **Delete All Insurers Button** - Clear database for fresh import
+  - Add confirmation dialog
+  - Option to delete by category or all
+  - Useful for re-importing updated data
+
 - [ ] **Editable Recipients via UI** - Manage email recipients without editing .env
   - Add recipients management page
   - Store in database instead of env vars
