@@ -63,7 +63,7 @@ class GoogleNewsSource(NewsSource):
             "queries": query,
             "language": "BR:pt",  # Combined country:language format
             "maxItems": max_results,
-            "timeRange": "7d",
+            "timeRange": "1d",  # Last 24 hours
         }
 
         logger.info(f"Starting Google News search: {query[:100]}...")
