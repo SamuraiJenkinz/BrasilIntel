@@ -300,29 +300,41 @@ cd C:\BrasilIntel
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-**Option B: Create a Windows Service (using NSSM)**
-
-1. Download NSSM from https://nssm.cc/download
-2. Extract and run:
-   ```powershell
-   nssm install BrasilIntelWeb
-   ```
-3. Configure:
-   - **Path:** `C:\BrasilIntel\venv\Scripts\python.exe`
-   - **Startup directory:** `C:\BrasilIntel`
-   - **Arguments:** `-m uvicorn app.main:app --host 0.0.0.0 --port 8000`
-4. Start the service:
-   ```powershell
-   nssm start BrasilIntelWeb
-   ```
-
-**Option C: Run at startup via Task Scheduler**
+**Option B: Run at startup via Windows Task Scheduler (Recommended)**
 
 ```powershell
-$Action = New-ScheduledTaskAction -Execute "C:\BrasilIntel\venv\Scripts\python.exe" -Argument "-m uvicorn app.main:app --host 0.0.0.0 --port 8000" -WorkingDirectory "C:\BrasilIntel"
+# Create batch script for web server
+$BatchContent = @"
+@echo off
+cd /d C:\BrasilIntel
+call venv\Scripts\activate.bat
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+"@
+Set-Content -Path "C:\BrasilIntel\deploy\run_webserver.bat" -Value $BatchContent
+
+# Create scheduled task to run at startup
+$Action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c C:\BrasilIntel\deploy\run_webserver.bat" -WorkingDirectory "C:\BrasilIntel"
 $Trigger = New-ScheduledTaskTrigger -AtStartup
 $Principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-Register-ScheduledTask -TaskName "BrasilIntel_WebServer" -Action $Action -Trigger $Trigger -Principal $Principal -Description "BrasilIntel Web Server"
+$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 5)
+
+Register-ScheduledTask -TaskName "BrasilIntel_WebServer" -Action $Action -Trigger $Trigger -Principal $Principal -Settings $Settings -Description "BrasilIntel Web Server"
+```
+
+**Manage the web server task:**
+```powershell
+# Start immediately
+Start-ScheduledTask -TaskName "BrasilIntel_WebServer"
+
+# Check status
+Get-ScheduledTask -TaskName "BrasilIntel_WebServer" | Select-Object TaskName, State
+
+# Stop/Disable
+Stop-ScheduledTask -TaskName "BrasilIntel_WebServer"
+Disable-ScheduledTask -TaskName "BrasilIntel_WebServer"
+
+# Remove
+Unregister-ScheduledTask -TaskName "BrasilIntel_WebServer" -Confirm:$false
 ```
 
 ---
