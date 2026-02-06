@@ -46,6 +46,8 @@ param(
 
     [string]$AppPath = (Split-Path -Parent $PSScriptRoot),
 
+    [int]$Port = 8000,
+
     [int]$LogLines = 50
 )
 
@@ -178,17 +180,17 @@ switch ($Action) {
 
         # Test health check endpoint if server is running
         try {
-            $Response = Invoke-WebRequest -Uri "http://localhost:8000/api/health" -TimeoutSec 5 -ErrorAction Stop
-            Write-Host "Health Check Response:" -ForegroundColor Green
+            $Response = Invoke-WebRequest -Uri "http://localhost:$Port/api/health" -TimeoutSec 5 -ErrorAction Stop
+            Write-Host "Health Check Response (Port $Port):" -ForegroundColor Green
             $Response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
             Write-Host ""
         } catch {
-            Write-Host "Server not running or health check failed. Starting server..." -ForegroundColor Yellow
+            Write-Host "Server not running or health check failed on port $Port. Starting server..." -ForegroundColor Yellow
             Write-Host ""
-            Write-Host "Starting uvicorn server (press Ctrl+C to stop)..." -ForegroundColor Yellow
+            Write-Host "Starting uvicorn server on port $Port (press Ctrl+C to stop)..." -ForegroundColor Yellow
 
             Set-Location $AppPath
-            & "$AppPath\venv\Scripts\python.exe" -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+            & "$AppPath\venv\Scripts\python.exe" -m uvicorn app.main:app --host 0.0.0.0 --port $Port
         }
     }
 }
