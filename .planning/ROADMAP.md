@@ -53,13 +53,12 @@ Plans:
   2. Full article body text is retrieved for each article (not just headlines)
   3. Articles that appear more than once within the batch are removed before processing (URL dedup + semantic similarity threshold)
   4. Each surviving Factiva article is stored with all required fields: title, description, source_url, source_name, published_at, and source badge indicating "Factiva"
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: FactivaClient — Recent News endpoint wrapper, X-Api-Key auth, query construction with industry codes and keywords
-- [ ] 10-02: Article body fetcher — individual article content retrieval from Factiva
-- [ ] 10-03: ArticleDeduplicator port — URL dedup + sentence-transformers semantic dedup adapted for Factiva batch
-- [ ] 10-04: Factiva article normalizer — map Factiva response schema to BrasilIntel NewsItem fields
+- [ ] 10-01-PLAN.md — FactivaCollector: complete API client with search, article body fetch, normalization, ApiEvent recording, and FactivaConfig seed script
+- [ ] 10-02-PLAN.md — ArticleDeduplicator: sentence-transformers semantic dedup with UnionFind grouping, add sentence-transformers dependency
+- [ ] 10-03-PLAN.md — Integration test: test_factiva.py end-to-end validation (collect, URL dedup, semantic dedup, field validation)
 
 #### Phase 11: Insurer Matching Pipeline
 
@@ -168,7 +167,7 @@ Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize wit
 | 7. Scheduling & Automation | v1.0 | 4/4 | Complete | 2026-02-05 |
 | 8. Admin Interface | v1.0 | 6/6 | Complete | 2026-02-05 |
 | 9. Enterprise API Foundation | v1.1 | 3/3 | Complete | 2026-02-19 |
-| 10. Factiva News Collection | v1.1 | 0/4 | Not started | - |
+| 10. Factiva News Collection | v1.1 | 0/3 | Not started | - |
 | 11. Insurer Matching Pipeline | v1.1 | 0/3 | Not started | - |
 | 12. Equity Price Enrichment | v1.1 | 0/4 | Not started | - |
 | 13. Enterprise Email Delivery | v1.1 | 0/3 | Not started | - |
