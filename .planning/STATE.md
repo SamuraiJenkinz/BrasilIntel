@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 
 ## Current Position
 
-Phase: 10 of 15 (Factiva News Collection) — IN PROGRESS
-Plan: 1 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-19 — Completed 10-01-PLAN.md (FactivaCollector + seed script)
+Phase: 10 of 15 (Factiva News Collection) — COMPLETE
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-19 — Completed 10-03-PLAN.md (Factiva validation script)
 
-Progress: v1.0 [##########] 100% | v1.1 [####......] 36%
+Progress: v1.0 [##########] 100% | v1.1 [#####.....] 46%
 
 ## Performance Metrics
 
@@ -24,16 +24,16 @@ Progress: v1.0 [##########] 100% | v1.1 [####......] 36%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 4
-- Average duration: 8.3 min
-- Total execution time: 33 min
+- Total plans completed: 7
+- Average duration: 7.9 min
+- Total execution time: 55 min
 
 **By Phase (v1.1):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 9. Enterprise API Foundation | 3/3 COMPLETE | 7 min | 2.3 min |
-| 10. Factiva News Collection | 1/3 | 15 min | 15 min |
+| 10. Factiva News Collection | 3/3 COMPLETE | 48 min | 16 min |
 
 *Updated after each plan completion*
 
@@ -63,6 +63,9 @@ v1.1 decisions:
 | Brazilian insurance codes | i82, i8200, i82001, i82002, i82003 — batch query for entire sector, AI matches insurers post-hoc | 10-01 |
 | Portuguese insurance keywords | 9 terms (seguro, seguradora, resseguro, etc.) for broad coverage, AI classifier filters relevance | 10-01 |
 | page_size=50 default | Balance coverage and API cost, MAX_ARTICLES=100 hard cap prevents runaway charges | 10-01 |
+| Inline FactivaConfig seeding | test_factiva.py creates FactivaConfig id=1 if missing — removes seed script dependency | 10-03 |
+| URL dedup before semantic | Explicit URL dedup before embeddings — avoids embedding duplicates, ~40% speedup | 10-03 |
+| Exit 0 for unconfigured | test_factiva.py exits 0 (not error) when credentials missing — expected state for new checkouts | 10-03 |
 
 ### Pending Todos
 
@@ -70,17 +73,18 @@ None.
 
 ### Blockers/Concerns
 
-- **ACTION REQUIRED before Phase 10:** Staging MMC credentials must be added to .env and validated with `python scripts/test_auth.py` — run passes exit code 0 confirms auth works
+- **ACTION REQUIRED before Phase 11 testing:** Staging MMC credentials must be added to .env and validated with `python scripts/test_auth.py` (Phase 9) and `python scripts/test_factiva.py` (Phase 10)
 - Phase 11 insurer matching complexity: 897 insurers, batch articles, AI disambiguation cost needs monitoring
+- First semantic dedup run downloads all-MiniLM-L6-v2 model (~80MB, ~30s) — may trigger during Phase 11 pipeline dev
 - Cleanup (Phase 15) must NOT run until Phase 11 is confirmed working in pipeline
 - Windows Long Path error with msgraph-sdk on `pip install -r requirements.txt` — pre-existing, not caused by Phase 9
 
 ## Session Continuity
 
-Last session: 2026-02-19T20:57:44Z
-Stopped at: Completed 10-01-PLAN.md — FactivaCollector (app/collectors/factiva.py) + seed_factiva_config.py
-Resume file: .planning/phases/10-factiva-news-collection/10-01-SUMMARY.md
+Last session: 2026-02-19T21:00:27Z
+Stopped at: Completed 10-03-PLAN.md — Phase 10 COMPLETE (FactivaCollector + ArticleDeduplicator + validation script)
+Resume file: .planning/phases/10-factiva-news-collection/10-03-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-19 after 10-01 completion*
+*Last updated: 2026-02-19 after 10-03 completion (Phase 10 COMPLETE)*
