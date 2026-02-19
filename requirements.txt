@@ -53,3 +53,6 @@ tzdata>=2024.2  # Windows timezone data
 
 # Phase 9 - Enterprise API Foundation
 tenacity>=8.0.0
+
+# Phase 10 - Factiva News Collection
+sentence-transformers>=2.2.0
