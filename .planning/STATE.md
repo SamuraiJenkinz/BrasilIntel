@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 9 of 15 (Enterprise API Foundation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-19 — Completed 09-01-PLAN.md (MMC Core API configuration)
+Last activity: 2026-02-19 — Completed 09-02-PLAN.md (Enterprise API ORM models and migration)
 
-Progress: v1.0 [##########] 100% | v1.1 [#.........] 10%
+Progress: v1.0 [##########] 100% | v1.1 [##........] 20%
 
 ## Performance Metrics
 
@@ -24,15 +24,15 @@ Progress: v1.0 [##########] 100% | v1.1 [#.........] 10%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 1
-- Average duration: 3 min
-- Total execution time: 3 min
+- Total plans completed: 2
+- Average duration: 2.5 min
+- Total execution time: 5 min
 
 **By Phase (v1.1):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 9. Enterprise API Foundation | 1/3 | 3 min | 3 min |
+| 9. Enterprise API Foundation | 2/3 | 5 min | 2.5 min |
 
 *Updated after each plan completion*
 
@@ -51,6 +51,9 @@ v1.1 decisions:
 | mmc_sender_name default | Empty string (not "Kevin Taylor") — BrasilIntel sender identity deferred to Phase 13 | 09-01 |
 | Three separate config guards | is_mmc_auth_configured, is_mmc_api_key_configured, is_mmc_email_configured — granular per-service checks | 09-01 |
 | MMC env vars commented out | All MMC_ vars commented out in .env.example — app boots safely without enterprise credentials | 09-01 |
+| EquityTicker.exchange = BVMF | Default exchange is B3 (Brazilian) not NYSE — BrasilIntel targets Brazilian market | 09-02 |
+| Single migration 007 | All three Phase 9-12 tables created upfront — avoids per-phase migration scripts | 09-02 |
+| ApiEvent.run_id nullable | Out-of-pipeline calls (auth test scripts) can log events without a run context | 09-02 |
 
 ### Pending Todos
 
@@ -65,10 +68,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-19T18:47:30Z
-Stopped at: Completed 09-01-PLAN.md — MMC Core API config fields, tenacity dependency, .env.example docs
-Resume file: .planning/phases/09-enterprise-api-foundation/09-01-SUMMARY.md
+Last session: 2026-02-19T18:47:38Z
+Stopped at: Completed 09-02-PLAN.md — enterprise API ORM models (ApiEvent, FactivaConfig, EquityTicker) + migration 007
+Resume file: .planning/phases/09-enterprise-api-foundation/09-02-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-19 after 09-01 completion*
+*Last updated: 2026-02-19 after 09-02 completion*
