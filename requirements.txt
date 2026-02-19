@@ -50,3 +50,6 @@ weasyprint>=63.1
 # Phase 7 - Scheduling & Automation
 APScheduler>=3.10.4
 tzdata>=2024.2  # Windows timezone data
+
+# Phase 9 - Enterprise API Foundation
+tenacity>=8.0.0
