@@ -8,6 +8,17 @@ Automated competitive intelligence system for Marsh Brasil that monitors 897 Bra
 
 Senior management at Marsh Brasil receives actionable, professionally-formatted intelligence reports on their monitored insurers daily, with zero manual effort.
 
+## Current Milestone: v1.1 Enterprise API Integration
+
+**Goal:** Replace Apify web scraping with Factiva/Dow Jones as sole news source, add inline equity price data, and switch to MMC Core API enterprise email delivery — porting the proven enterprise integration from MDInsights into BrasilIntel.
+
+**Target features:**
+- Factiva news collection via MMC Core API (replaces all 6 Apify sources)
+- Equity price enrichment for tracked Brazilian insurance companies
+- Enterprise email delivery via MMC Core API (with Graph API fallback)
+- OAuth2 client credentials token management
+- Admin UI for Factiva config, equity tickers, enterprise credentials, API health
+
 ## Current State
 
 **Version:** v1.0 MVP (shipped 2026-02-05)
@@ -29,7 +40,12 @@ Senior management at Marsh Brasil receives actionable, professionally-formatted 
 
 ### Active
 
-(None yet — define for next milestone)
+- Factiva/Dow Jones as primary (and only) news source via MMC Core API
+- Equity price data inline with news stories via MMC Core API
+- Enterprise email delivery via MMC Core API (with Graph API fallback)
+- OAuth2 client credentials token management for API authentication
+- Admin dashboard: enterprise API health, credential config, Factiva query config, equity ticker mappings
+- Remove Apify scraping infrastructure (6 sources, apify-client dependency)
 
 ### Out of Scope
 
@@ -53,9 +69,13 @@ Senior management at Marsh Brasil receives actionable, professionally-formatted 
 - Corporate M365 Exchange Online (Graph API for email)
 - Azure AD for authentication
 - Azure OpenAI (corporate LLM deployment)
-- Apify account for web scraping
+- Apify account for web scraping (being replaced by Factiva in v1.1)
+- MMC Core API platform (Apigee) — staging credentials available (shared with MDInsights)
 - Windows Server on AWS (production)
 - Windows 11 (development)
+
+**Sister Project:**
+- MDInsights (v1.1 shipped) provides the enterprise API integration patterns being ported to BrasilIntel. Same tech stack, same MMC Core API credentials.
 
 **Key Identifiers:**
 - ANS Code: Brazilian regulatory registration number
@@ -85,5 +105,9 @@ Senior management at Marsh Brasil receives actionable, professionally-formatted 
 | Read-only recipients | Env var config acceptable for MVP scope | Acceptable |
 | WeasyPrint for PDF | Native Python, good CSS support | Good |
 
+| Factiva over Apify for news | Enterprise Dow Jones feed more reliable than web scraping; proven in MDInsights | -- Pending |
+| Copy and adapt from MDInsights | Port enterprise modules directly, adapt for Brazilian context | -- Pending |
+| Industry codes + keywords for Factiva | Query by Brazilian insurance industry codes, not per-insurer | -- Pending |
+
 ---
-*Last updated: 2026-02-05 after v1.0 milestone*
+*Last updated: 2026-02-19 after v1.1 milestone start*

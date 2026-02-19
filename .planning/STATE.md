@@ -2,18 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-05)
+See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** v1.0 shipped — planning next milestone
+**Current focus:** v1.1 Enterprise API Integration — defining requirements
 
 ## Current Position
 
-Phase: v1.0 complete (8 phases, 41 plans)
-Plan: N/A — milestone complete
-Status: Ready to plan next milestone
-Progress: [██████████] 100% v1.0 shipped
-Last activity: 2026-02-05 — v1.0 milestone archived
+Phase: Not started (defining requirements)
+Plan: --
+Status: Defining requirements
+Last activity: 2026-02-19 -- Milestone v1.1 started
+
+Progress: v1.0 [##########] 100% | v1.1 [..........] 0%
 
 ## Milestone Summary
 
@@ -32,19 +33,26 @@ Full decision history in archived `.planning/milestones/v1.0-ROADMAP.md`.
 
 ### Known Issues
 
-- Recipients page is read-only (by design — env var configuration)
+- Recipients page is read-only (by design -- env var configuration)
 - GTK3 runtime required for PDF generation on Windows (graceful fallback to HTML)
 
 ### Technical Debt
 
 None significant from v1.0.
 
+### Enterprise API Context (from MDInsights)
+
+- MDInsights v1.1 provides the reference implementation for all enterprise API integrations
+- Staging credentials shared between MDInsights and BrasilIntel
+- Non-prod host: mmc-dallas-int-non-prod-ingress.mgti.mmc.com
+- Auth: X-Api-Key for News/Equity, JWT Bearer + X-Api-Key for Email
+
 ## Session Continuity
 
-Last session: 2026-02-05
-Stopped at: v1.0 milestone archived
-Resume with: `/gsd:new-milestone` to define v1.1 or v2.0
+Last session: 2026-02-19
+Stopped at: Milestone v1.1 questioning complete, proceeding to research/requirements
+Resume with: Continue `/gsd:new-milestone` flow
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-05 after v1.0 milestone*
+*Last updated: 2026-02-19 after v1.1 milestone start*
