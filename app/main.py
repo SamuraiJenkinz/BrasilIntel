@@ -16,6 +16,7 @@ from sqlalchemy import text
 from app.database import Base, engine, SessionLocal
 # Import models to register them with Base.metadata before create_all
 from app.models import insurer, run, news_item  # noqa: F401
+from app.models import api_event, factiva_config, equity_ticker  # noqa: F401
 from app.routers import insurers, import_export, runs, reports, schedules, admin
 from app.services.scheduler_service import SchedulerService
 
