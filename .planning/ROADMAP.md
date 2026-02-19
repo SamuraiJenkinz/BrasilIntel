@@ -70,12 +70,12 @@ Plans:
   2. Articles clearly mentioning a specific insurer by name or known search term are matched without AI involvement (deterministic path)
   3. Ambiguous articles are sent to Azure OpenAI for insurer identification — the model receives insurer name/search_term context and returns a structured match result
   4. The pipeline collection step invokes Factiva — there is no Apify code path remaining in the active collection flow
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 11-01: Insurer matcher — deterministic name/search_term matching against 897 insurers
-- [ ] 11-02: AI-assisted insurer matcher — Azure OpenAI disambiguation for ambiguous articles, structured output
-- [ ] 11-03: Pipeline integration — replace scraper.py collection step with FactivaCollector, wire matcher output to insurer_id assignment
+- [ ] 11-01-PLAN.md — Deterministic insurer matcher: MatchResult schema + InsurerMatcher with name/search_term word-boundary matching, Portuguese accent normalization
+- [ ] 11-02-PLAN.md — AI-assisted insurer matcher: AIInsurerMatcher with Azure OpenAI structured output for ambiguous articles, ApiEvent logging
+- [ ] 11-03-PLAN.md — Pipeline integration: rewrite runs.py to use FactivaCollector + dedup + insurer matching, remove Apify from active flow, sentinel insurer for unmatched
 
 #### Phase 12: Equity Price Enrichment
 
