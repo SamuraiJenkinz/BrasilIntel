@@ -67,36 +67,37 @@
 
 | Requirement | Phase | Plan | Status |
 |-------------|-------|------|--------|
-| AUTH-01 | — | — | Pending |
-| AUTH-02 | — | — | Pending |
-| AUTH-03 | — | — | Pending |
-| AUTH-04 | — | — | Pending |
-| FACT-01 | — | — | Pending |
-| FACT-02 | — | — | Pending |
-| FACT-03 | — | — | Pending |
-| FACT-04 | — | — | Pending |
-| FACT-05 | — | — | Pending |
-| FACT-06 | — | — | Pending |
-| FACT-07 | — | — | Pending |
-| EQTY-01 | — | — | Pending |
-| EQTY-02 | — | — | Pending |
-| EQTY-03 | — | — | Pending |
-| EQTY-04 | — | — | Pending |
-| EEML-01 | — | — | Pending |
-| EEML-02 | — | — | Pending |
-| EEML-03 | — | — | Pending |
-| EEML-04 | — | — | Pending |
-| EEML-05 | — | — | Pending |
-| ADMN-17 | — | — | Pending |
-| ADMN-18 | — | — | Pending |
-| ADMN-19 | — | — | Pending |
-| ADMN-20 | — | — | Pending |
-| ADMN-21 | — | — | Pending |
-| ADMN-22 | — | — | Pending |
-| CLNP-01 | — | — | Pending |
-| CLNP-02 | — | — | Pending |
-| CLNP-03 | — | — | Pending |
-| CLNP-04 | — | — | Pending |
+| AUTH-01 | Phase 9 | 09-02 | Pending |
+| AUTH-02 | Phase 9 | 09-02 | Pending |
+| AUTH-03 | Phase 9 | 09-01, 09-02 | Pending |
+| AUTH-04 | Phase 9 | 09-02 | Pending |
+| FACT-01 | Phase 10 | 10-01 | Pending |
+| FACT-02 | Phase 10 | 10-01 | Pending |
+| FACT-03 | Phase 10 | 10-02 | Pending |
+| FACT-04 | Phase 11 | 11-01, 11-02 | Pending |
+| FACT-05 | Phase 10 | 10-04 | Pending |
+| FACT-06 | Phase 11 | 11-03 | Pending |
+| FACT-07 | Phase 10 | 10-03 | Pending |
+| EQTY-01 | Phase 12 | 12-01 | Pending |
+| EQTY-02 | Phase 12 | 12-02 | Pending |
+| EQTY-03 | Phase 12 | 12-03 | Pending |
+| EQTY-04 | Phase 12 | 12-04 | Pending |
+| EEML-01 | Phase 13 | 13-01 | Pending |
+| EEML-02 | Phase 13 | 13-01 | Pending |
+| EEML-03 | Phase 13 | 13-02 | Pending |
+| EEML-04 | Phase 13 | 13-01 | Pending |
+| EEML-05 | Phase 13 | 13-02 | Pending |
+| ADMN-17 | Phase 14 | 14-01 | Pending |
+| ADMN-18 | Phase 14 | 14-02 | Pending |
+| ADMN-19 | Phase 14 | 14-03 | Pending |
+| ADMN-20 | Phase 12 | 12-02 | Pending |
+| ADMN-21 | Phase 14 | 14-04 | Pending |
+| ADMN-22 | Phase 14 | 14-05 | Pending |
+| CLNP-01 | Phase 15 | 15-01 | Pending |
+| CLNP-02 | Phase 15 | 15-01 | Pending |
+| CLNP-03 | Phase 15 | 15-02 | Pending |
+| CLNP-04 | Phase 15 | 15-02 | Pending |
 
 ---
 *Created: 2026-02-19 for milestone v1.1*
+*Traceability updated: 2026-02-19 after roadmap creation*

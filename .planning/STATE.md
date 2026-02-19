@@ -5,54 +5,64 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** v1.1 Enterprise API Integration — defining requirements
+**Current focus:** v1.1 Enterprise API Integration — Phase 9: Enterprise API Foundation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: --
-Status: Defining requirements
-Last activity: 2026-02-19 -- Milestone v1.1 started
+Phase: 9 of 15 (Enterprise API Foundation)
+Plan: 0 of 3 in current phase
+Status: Ready to plan
+Last activity: 2026-02-19 — v1.1 roadmap created, ready to begin Phase 9
 
 Progress: v1.0 [##########] 100% | v1.1 [..........] 0%
 
-## Milestone Summary
+## Performance Metrics
 
-**v1.0 MVP shipped 2026-02-05:**
-- 8 phases, 41 plans executed
-- 63 requirements validated
-- 11,057 lines of Python
-- Full archive: `.planning/milestones/v1.0-*`
+**v1.0 Velocity (reference):**
+- Total plans completed: 41
+- Average duration: ~10 min
+- Total execution time: ~7.0 hours
+
+**v1.1 Velocity:**
+- Total plans completed: 0
+- Average duration: --
+- Total execution time: --
+
+**By Phase (v1.1):**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 9. Enterprise API Foundation | 0/3 | -- | -- |
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
-### Key Decisions (v1.0)
+### Decisions
 
-All decisions logged in PROJECT.md Key Decisions table.
-Full decision history in archived `.planning/milestones/v1.0-ROADMAP.md`.
+All v1.0 decisions logged in PROJECT.md Key Decisions table.
 
-### Known Issues
+v1.1 pending decisions (outcome = "--"):
+- Factiva over Apify: Enterprise Dow Jones feed more reliable; proven in MDInsights
+- Port from MDInsights: Adapt enterprise modules directly (MMCAuthService, FactivaClient, EnterpriseEmailer, EquityClient)
+- Industry codes + keywords: Batch Factiva query with post-hoc AI insurer matching (not per-insurer queries)
 
-- Recipients page is read-only (by design -- env var configuration)
-- GTK3 runtime required for PDF generation on Windows (graceful fallback to HTML)
+### Pending Todos
 
-### Technical Debt
+None yet.
 
-None significant from v1.0.
+### Blockers/Concerns
 
-### Enterprise API Context (from MDInsights)
-
-- MDInsights v1.1 provides the reference implementation for all enterprise API integrations
-- Staging credentials shared between MDInsights and BrasilIntel
-- Non-prod host: mmc-dallas-int-non-prod-ingress.mgti.mmc.com
-- Auth: X-Api-Key for News/Equity, JWT Bearer + X-Api-Key for Email
+- Staging credentials must be validated against non-prod Apigee host before Phase 10 can succeed (shared with MDInsights — should already work)
+- Phase 11 insurer matching complexity: 897 insurers, batch articles, AI disambiguation cost needs monitoring
+- Cleanup (Phase 15) must NOT run until Phase 11 is confirmed working in pipeline
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Milestone v1.1 questioning complete, proceeding to research/requirements
-Resume with: Continue `/gsd:new-milestone` flow
+Stopped at: Roadmap created for v1.1. All 30 requirements mapped to Phases 9-15.
+Resume with: `/gsd:plan-phase 9`
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-19 after v1.1 milestone start*
+*Last updated: 2026-02-19 after v1.1 roadmap creation*
