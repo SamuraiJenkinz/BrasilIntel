@@ -56,9 +56,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — FactivaCollector: complete API client with search, article body fetch, normalization, ApiEvent recording, and FactivaConfig seed script
-- [ ] 10-02-PLAN.md — ArticleDeduplicator: sentence-transformers semantic dedup with UnionFind grouping, add sentence-transformers dependency
-- [ ] 10-03-PLAN.md — Integration test: test_factiva.py end-to-end validation (collect, URL dedup, semantic dedup, field validation)
+- [x] 10-01-PLAN.md — FactivaCollector: complete API client with search, article body fetch, normalization, ApiEvent recording, and FactivaConfig seed script
+- [x] 10-02-PLAN.md — ArticleDeduplicator: sentence-transformers semantic dedup with UnionFind grouping, add sentence-transformers dependency
+- [x] 10-03-PLAN.md — Integration test: test_factiva.py end-to-end validation (collect, URL dedup, semantic dedup, field validation)
 
 #### Phase 11: Insurer Matching Pipeline
 
@@ -167,7 +167,7 @@ Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize wit
 | 7. Scheduling & Automation | v1.0 | 4/4 | Complete | 2026-02-05 |
 | 8. Admin Interface | v1.0 | 6/6 | Complete | 2026-02-05 |
 | 9. Enterprise API Foundation | v1.1 | 3/3 | Complete | 2026-02-19 |
-| 10. Factiva News Collection | v1.1 | 0/3 | Not started | - |
+| 10. Factiva News Collection | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 11. Insurer Matching Pipeline | v1.1 | 0/3 | Not started | - |
 | 12. Equity Price Enrichment | v1.1 | 0/4 | Not started | - |
 | 13. Enterprise Email Delivery | v1.1 | 0/3 | Not started | - |
