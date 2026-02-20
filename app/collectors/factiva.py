@@ -54,11 +54,11 @@ class FactivaCollector:
         if collector.is_configured():
             articles = collector.collect(query_params)
 
-    Query parameters (from FactivaConfig row):
-        industry_codes  - Comma-separated Factiva industry codes (e.g. "i82,i8200")
-        company_codes   - Comma-separated company codes (optional)
-        keywords        - Comma-separated search terms (e.g. "seguro,seguradora")
-        page_size       - Articles per page (default 50, max 100)
+    Query parameters (from FactivaConfig row → mapped to API param names):
+        industry_codes  → "industry"  - Factiva industry codes (e.g. "i82,i8200")
+        company_codes   → "company"   - Company codes (optional)
+        keywords        → "query"     - Search terms (e.g. "seguro,seguradora")
+        date_range_hours              - Lookback window in hours (default 48)
 
     Normalized article dict schema (compatible with NewsItem model):
         title           - Article headline
@@ -97,7 +97,7 @@ class FactivaCollector:
 
         Args:
             query_params: Dict with keys: industry_codes, company_codes, keywords,
-                          page_size, date_range_hours. Values are comma-separated strings.
+                          date_range_hours. Values are comma-separated strings.
             run_id: Optional pipeline run ID for event attribution.
 
         Returns:
@@ -118,7 +118,6 @@ class FactivaCollector:
         industry_codes_raw = query_params.get("industry_codes", "i82,i8200")
         company_codes_raw = query_params.get("company_codes", "")
         keywords_raw = query_params.get("keywords", "seguro,seguradora")
-        page_size = int(query_params.get("page_size", 50))
 
         # Build search query params
         params = {
@@ -127,30 +126,28 @@ class FactivaCollector:
             "sortBy": "date",
             "sortOrder": "desc",
             "deduplication": "similar",
-            "pageSize": min(page_size, self.MAX_ARTICLES),
         }
 
         # Add industry codes if provided
         industry_codes = [c.strip() for c in industry_codes_raw.split(",") if c.strip()]
         if industry_codes:
-            params["industryCodes"] = ",".join(industry_codes)
+            params["industry"] = ",".join(industry_codes)
 
         # Add company codes if provided
         company_codes = [c.strip() for c in company_codes_raw.split(",") if c.strip()]
         if company_codes:
-            params["companyCodes"] = ",".join(company_codes)
+            params["company"] = ",".join(company_codes)
 
         # Add keywords if provided
         keywords = [k.strip() for k in keywords_raw.split(",") if k.strip()]
         if keywords:
-            params["keywords"] = " ".join(keywords)
+            params["query"] = " ".join(keywords)
 
         self.logger.info(
             "factiva_search_started",
             from_date=from_date,
             to_date=to_date,
             industry_codes=industry_codes,
-            page_size=params["pageSize"],
         )
 
         try:
