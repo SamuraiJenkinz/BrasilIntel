@@ -7,6 +7,65 @@
     <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
 </div>
 
+<!-- Enterprise API Status Panel -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-plug me-2"></i>Enterprise API Status
+                <small class="text-muted ms-2">(Updated on each pipeline run)</small>
+            </div>
+            <div class="card-body">
+                {% if enterprise_status %}
+                <div class="row">
+                    {% for api in enterprise_status %}
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-start">
+                            <!-- Traffic light icon -->
+                            <div class="me-3">
+                                {% if api.status == "healthy" %}
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 2rem;"></i>
+                                {% elif api.status == "degraded" %}
+                                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 2rem;"></i>
+                                {% elif api.status == "offline" %}
+                                <i class="bi bi-x-circle-fill text-danger" style="font-size: 2rem;"></i>
+                                {% else %}
+                                <i class="bi bi-question-circle text-secondary" style="font-size: 2rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block">{{ api.display_name }}</strong>
+                                <span class="badge bg-{{ api.status|status_color }} mb-2">
+                                    {{ api.status|capitalize }}
+                                </span>
+                                <div class="small text-muted">
+                                    {% if api.last_success %}
+                                    <div><i class="bi bi-check-circle me-1"></i>Last success: {{ api.last_success }}</div>
+                                    {% else %}
+                                    <div><i class="bi bi-check-circle me-1"></i>No successful calls</div>
+                                    {% endif %}
+                                    {% if api.last_failure %}
+                                    <div><i class="bi bi-x-circle me-1"></i>Last failure: {{ api.last_failure }}</div>
+                                    {% else %}
+                                    <div><i class="bi bi-x-circle me-1"></i>No failures recorded</div>
+                                    {% endif %}
+                                </div>
+                                {% if api.reason %}
+                                <div class="small text-danger mt-1">{{ api.reason }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No events recorded</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Category Cards Row -->
 <div class="row mb-4">
     {% for category in categories %}
@@ -106,7 +165,7 @@
 </div>
 
 <!-- Quick Actions -->
-<div class="row">
+<div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
@@ -130,6 +189,46 @@
                         <i class="bi bi-code-slash me-1"></i>API Documentation
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fallback Event Log -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-exclamation-triangle me-2"></i>Fallback Event Log
+                <small class="text-muted ms-2">(Last 20 fallback/failure events)</small>
+            </div>
+            <div class="card-body p-0">
+                {% if fallback_events %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>API</th>
+                                <th>Event Type</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in fallback_events %}
+                            <tr>
+                                <td class="text-nowrap">{{ event.timestamp }}</td>
+                                <td>{{ event.api_name }}</td>
+                                <td><span class="badge bg-warning">{{ event.event_type }}</span></td>
+                                <td class="text-muted small">{{ event.reason or "—" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3 mb-0">No fallback events recorded</p>
+                {% endif %}
             </div>
         </div>
     </div>

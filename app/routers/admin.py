@@ -22,6 +22,7 @@ from app.dependencies import (
 from app.models.insurer import Insurer
 from app.models.run import Run
 from app.models.equity_ticker import EquityTicker
+from app.models.api_event import ApiEvent, ApiEventType
 from app.services.excel_service import parse_excel_insurers
 from app.services.scheduler_service import SchedulerService
 from app.services.report_archiver import ReportArchiver
@@ -331,6 +332,123 @@ async def logout(
 
 # ----- Dashboard Routes -----
 
+def _get_enterprise_api_status(db: Session) -> list[dict]:
+    """
+    Get enterprise API health status for dashboard panel.
+
+    Queries ApiEvent table for each enterprise API (auth, news, equity)
+    to find most recent successful and failed events.
+
+    Args:
+        db: Database session
+
+    Returns:
+        List of dicts with api_name, display_name, status, last_success, last_failure, reason
+    """
+    FALLBACK_TYPES = {
+        ApiEventType.NEWS_FALLBACK,
+        ApiEventType.EQUITY_FALLBACK,
+        ApiEventType.EMAIL_FALLBACK,
+    }
+
+    api_configs = [
+        {"api_name": "auth", "display_name": "Authentication"},
+        {"api_name": "news", "display_name": "News (Factiva)"},
+        {"api_name": "equity", "display_name": "Equity Prices"},
+    ]
+
+    results = []
+    for config in api_configs:
+        api_name = config["api_name"]
+        display_name = config["display_name"]
+
+        # Get most recent successful event
+        last_success = db.query(ApiEvent).filter(
+            ApiEvent.api_name == api_name,
+            ApiEvent.success == True
+        ).order_by(ApiEvent.timestamp.desc()).first()
+
+        # Get most recent failed event
+        last_failure = db.query(ApiEvent).filter(
+            ApiEvent.api_name == api_name,
+            ApiEvent.success == False
+        ).order_by(ApiEvent.timestamp.desc()).first()
+
+        # Determine overall status from most recent event
+        status = "unknown"
+        reason = None
+
+        # Get the absolute most recent event (success or failure)
+        most_recent = db.query(ApiEvent).filter(
+            ApiEvent.api_name == api_name
+        ).order_by(ApiEvent.timestamp.desc()).first()
+
+        if most_recent:
+            if most_recent.success:
+                status = "healthy"
+            else:
+                # Failed - check if it's a fallback
+                if most_recent.event_type in FALLBACK_TYPES:
+                    status = "degraded"
+                else:
+                    status = "offline"
+                reason = most_recent.detail[:100] if most_recent.detail else None
+
+        results.append({
+            "api_name": api_name,
+            "display_name": display_name,
+            "status": status,
+            "last_success": format_datetime(last_success.timestamp) if last_success else None,
+            "last_failure": format_datetime(last_failure.timestamp) if last_failure else None,
+            "reason": reason,
+        })
+
+    return results
+
+
+def _get_fallback_events(db: Session, limit: int = 20) -> list[dict]:
+    """
+    Get recent fallback/failure events for dashboard log.
+
+    Queries ApiEvent for fallback and critical failure events.
+
+    Args:
+        db: Database session
+        limit: Maximum number of events to return
+
+    Returns:
+        List of dicts with timestamp, api_name, event_type (human-readable), reason
+    """
+    FALLBACK_EVENT_TYPES = [
+        ApiEventType.NEWS_FALLBACK,
+        ApiEventType.EQUITY_FALLBACK,
+        ApiEventType.EMAIL_FALLBACK,
+        ApiEventType.TOKEN_FAILED,
+    ]
+
+    EVENT_LABELS = {
+        ApiEventType.NEWS_FALLBACK: "News Fallback",
+        ApiEventType.EQUITY_FALLBACK: "Equity Fallback",
+        ApiEventType.EMAIL_FALLBACK: "Email Fallback",
+        ApiEventType.TOKEN_FAILED: "Token Failed",
+    }
+
+    events = db.query(ApiEvent).filter(
+        ApiEvent.event_type.in_(FALLBACK_EVENT_TYPES)
+    ).order_by(ApiEvent.timestamp.desc()).limit(limit).all()
+
+    results = []
+    for event in events:
+        results.append({
+            "timestamp": format_datetime(event.timestamp),
+            "api_name": event.api_name,
+            "event_type": EVENT_LABELS.get(event.event_type, str(event.event_type)),
+            "reason": event.detail[:100] if event.detail else None,
+        })
+
+    return results
+
+
 @router.get("/", response_class=HTMLResponse, name="admin_dashboard")
 @router.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(
@@ -364,6 +482,10 @@ async def dashboard(
     # Get recent reports
     recent_reports = get_recent_reports(limit=5)
 
+    # Get enterprise API status and fallback events
+    enterprise_status = _get_enterprise_api_status(db)
+    fallback_events = _get_fallback_events(db)
+
     return templates.TemplateResponse(
         "admin/dashboard.html",
         {
@@ -374,6 +496,8 @@ async def dashboard(
             "category_stats": category_stats,
             "system_health": system_health,
             "recent_reports": recent_reports,
+            "enterprise_status": enterprise_status,
+            "fallback_events": fallback_events,
         }
     )
 
