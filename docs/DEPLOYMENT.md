@@ -1,6 +1,6 @@
 # BrasilIntel Deployment Guide
 
-**Version:** 1.0.1
+**Version:** 1.1.0
 **Last Updated:** 2026-02-19
 
 This guide covers two deployment options:
@@ -15,8 +15,9 @@ This guide covers two deployment options:
 2. [Option 1: Docker Deployment](#option-1-docker-deployment)
 3. [Option 2: Windows Server Deployment](#option-2-windows-server-deployment)
 4. [Post-Deployment Verification](#post-deployment-verification)
-5. [Maintenance](#maintenance)
-6. [Backup and Recovery](#backup-and-recovery)
+5. [Enterprise API Setup](#enterprise-api-setup)
+6. [Maintenance](#maintenance)
+7. [Backup and Recovery](#backup-and-recovery)
 
 ---
 
@@ -29,8 +30,7 @@ This guide covers two deployment options:
 - Network access for:
   - Azure OpenAI API
   - Microsoft Graph API
-  - Apify API
-  - News source websites
+  - MMC Core API (Factiva news, equity prices) - optional, enterprise features degrade gracefully
 
 ### Docker Deployment Requirements
 
@@ -142,9 +142,9 @@ This is the recommended production deployment for Windows Server environments.
 
 1. Download Python 3.11+ from https://www.python.org/downloads/
 2. Run installer with these options:
-   - ✅ Add Python to PATH
-   - ✅ Install for all users
-   - ✅ Customize installation → Add Python to environment variables
+   - Add Python to PATH
+   - Install for all users
+   - Customize installation > Add Python to environment variables
 
 3. Verify installation:
    ```powershell
@@ -200,9 +200,6 @@ AZURE_CLIENT_ID=your-client-id
 AZURE_CLIENT_SECRET=your-client-secret
 SENDER_EMAIL=brasilintel@marsh.com
 
-# Apify (Web Scraping)
-APIFY_TOKEN=your-apify-token
-
 # Admin Interface
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=your-secure-password
@@ -213,6 +210,18 @@ REPORT_RECIPIENTS_DENTAL=dental-team@marsh.com
 REPORT_RECIPIENTS_GROUP_LIFE=life-team@marsh.com
 ```
 
+**Enterprise API settings** (optional - for Factiva news and equity prices):
+
+```env
+# MMC Core API
+MMC_API_BASE_URL=https://mmc-dallas-int-non-prod-ingress.mgti.mmc.com
+MMC_API_CLIENT_ID=your-client-id
+MMC_API_CLIENT_SECRET=your-client-secret
+MMC_API_KEY=your-api-key
+```
+
+> **Note:** When MMC credentials are not configured, the app boots normally. Enterprise features (Factiva collection, equity prices) are skipped gracefully.
+
 ### 2.5 Initialize Database
 
 ```powershell
@@ -220,6 +229,9 @@ REPORT_RECIPIENTS_GROUP_LIFE=life-team@marsh.com
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 # Press Ctrl+C after you see "Application startup complete"
+
+# Run enterprise API migrations (creates api_events, factiva_config, equity_tickers tables)
+python scripts/migrate_007_enterprise_api_tables.py
 ```
 
 ### 2.6 Import Insurer Data
@@ -254,7 +266,7 @@ cd C:\BrasilIntel
 ```
 
 This creates Windows Scheduled Tasks that:
-- Run daily at configured times (São Paulo timezone)
+- Run daily at configured times (Sao Paulo timezone)
 - Execute as SYSTEM account
 - Auto-restart on failure (up to 3 times)
 - Log output to `data\logs\`
@@ -371,11 +383,17 @@ Unregister-ScheduledTask -TaskName "BrasilIntel_WebServer" -Confirm:$false
 | `AZURE_CLIENT_SECRET` | Yes | App registration client secret |
 | `SENDER_EMAIL` | Yes | Email address to send from |
 
-### Apify (Web Scraping)
+### MMC Core API (Enterprise)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `APIFY_TOKEN` | Yes | Apify API token |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `MMC_API_BASE_URL` | No* | - | MMC Core API base URL (Apigee gateway) |
+| `MMC_API_CLIENT_ID` | No* | - | OAuth2 client ID |
+| `MMC_API_CLIENT_SECRET` | No* | - | OAuth2 client secret |
+| `MMC_API_KEY` | No* | - | X-Api-Key for data endpoints |
+| `MMC_API_TOKEN_PATH` | No | `/coreapi/access-management/v1/token` | Token endpoint path |
+
+> *Required for Factiva news collection and equity price enrichment. When not configured, enterprise features are skipped gracefully.
 
 ### Admin Interface
 
@@ -409,17 +427,6 @@ Unregister-ScheduledTask -TaskName "BrasilIntel_WebServer" -Confirm:$false
 | `SCHEDULE_HEALTH_ENABLED` | `true` | Enable Health schedule |
 | `SCHEDULE_DENTAL_ENABLED` | `true` | Enable Dental schedule |
 | `SCHEDULE_GROUP_LIFE_ENABLED` | `true` | Enable Group Life schedule |
-
-### Scraping
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `BATCH_SIZE` | `30` | Insurers per batch |
-| `BATCH_DELAY_SECONDS` | `2.0` | Delay between batches |
-| `MAX_CONCURRENT_SOURCES` | `3` | Parallel source queries |
-| `SCRAPE_TIMEOUT_SECONDS` | `60` | Default scrape timeout |
-| `SCRAPE_MAX_RESULTS` | `10` | Max results per insurer/source |
-| `USE_AI_RELEVANCE_SCORING` | `true` | Enable AI relevance filtering |
 
 ---
 
@@ -475,6 +482,84 @@ Get-Content .\data\logs\health_*.log -Tail 50
 
 ---
 
+## Enterprise API Setup
+
+This section covers setting up Factiva news collection and equity price enrichment via MMC Core API.
+
+### 1. Configure Credentials
+
+Add the following to your `.env` file:
+
+```env
+MMC_API_BASE_URL=https://mmc-dallas-int-non-prod-ingress.mgti.mmc.com
+MMC_API_CLIENT_ID=your-client-id
+MMC_API_CLIENT_SECRET=your-client-secret
+MMC_API_KEY=your-api-key
+```
+
+### 2. Run Database Migration
+
+```powershell
+python scripts/migrate_007_enterprise_api_tables.py
+```
+
+This creates three tables:
+- `api_events` - Logs all enterprise API calls (token requests, Factiva fetches, equity lookups)
+- `factiva_config` - Stores Factiva query parameters (industry codes, keywords, date range)
+- `equity_tickers` - Maps insurers to B3 ticker symbols
+
+### 3. Validate Authentication
+
+```powershell
+python scripts/test_auth.py
+```
+
+This script:
+- Attempts to acquire a JWT token from MMC Access Management API
+- Verifies token structure and expiry
+- Logs the result to `api_events` table
+- Exits 0 on success, 1 on failure
+
+### 4. Validate Factiva Collection
+
+```powershell
+python scripts/test_factiva.py
+```
+
+This script:
+- Collects a test batch of articles from Factiva
+- Performs URL deduplication
+- Runs semantic deduplication
+- Validates article fields
+- Exits 0 on success (also exits 0 if credentials not configured)
+
+### 5. Seed Factiva Configuration
+
+```powershell
+python scripts/seed_factiva_config.py
+```
+
+This populates default Factiva query parameters:
+- Brazilian insurance industry codes (i82, i8200, i82001, i82002, i82003)
+- Portuguese insurance keywords (seguro, seguradora, resseguro, etc.)
+- 48-hour date window for article collection
+
+### 6. Configure Equity Tickers
+
+1. Open the admin dashboard: `http://localhost:8000/admin/equity`
+2. Add ticker mappings (e.g., "SulAmerica" -> "SULA11", exchange "BVMF")
+3. Tickers are fetched during each pipeline run and displayed as equity chips in reports
+
+### 7. Verify End-to-End
+
+After setup, trigger a manual run and verify:
+- Factiva articles appear in the run results
+- Articles are matched to insurers
+- Equity chips display in the generated report
+- API events are logged in the database
+
+---
+
 ## Maintenance
 
 ### Management Commands (Windows)
@@ -518,7 +603,7 @@ git pull origin master
 pip install -r requirements.txt
 
 # Run any database migrations
-python scripts\migrate_*.py
+python scripts\migrate_007_enterprise_api_tables.py
 
 # Re-enable scheduled tasks
 .\deploy\manage_service.ps1 -Action start
@@ -541,7 +626,7 @@ Add this as a weekly scheduled task for automatic cleanup.
 
 ### What to Backup
 
-1. **Database:** `data\brasilintel.db`
+1. **Database:** `data\brasilintel.db` (includes api_events, factiva_config, equity_tickers)
 2. **Configuration:** `.env`
 3. **Report Archive:** `app\storage\reports\`
 
@@ -604,6 +689,7 @@ New-NetFirewallRule -DisplayName "BrasilIntel Web" -Direction Inbound -Protocol 
 4. **Secure .env file** - Set restrictive file permissions
 5. **Regular updates** - Keep Python and dependencies updated
 6. **Monitor logs** - Set up alerting for errors
+7. **Monitor API events** - Check `api_events` table for auth failures or excessive usage
 
 ---
 
@@ -613,8 +699,9 @@ For issues:
 1. Check logs in `data\logs\`
 2. Verify configuration in `.env`
 3. Test health endpoint: `/api/health`
-4. Review troubleshooting section in [USER_GUIDE.md](USER_GUIDE.md)
+4. Validate enterprise auth: `python scripts/test_auth.py`
+5. Review troubleshooting section in [USER_GUIDE.md](USER_GUIDE.md)
 
 ---
 
-*BrasilIntel v1.0 — [SamuraiJenkinz/BrasilIntel](https://github.com/SamuraiJenkinz/BrasilIntel)*
+*BrasilIntel v1.1 -- [SamuraiJenkinz/BrasilIntel](https://github.com/SamuraiJenkinz/BrasilIntel)*

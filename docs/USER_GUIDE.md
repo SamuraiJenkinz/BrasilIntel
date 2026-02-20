@@ -1,6 +1,6 @@
 # BrasilIntel User Guide
 
-**Version:** 1.0.1
+**Version:** 1.1.0
 **Last Updated:** 2026-02-19
 
 ## Table of Contents
@@ -11,11 +11,13 @@
 4. [Admin Dashboard](#admin-dashboard)
 5. [Managing Insurers](#managing-insurers)
 6. [Importing and Exporting Data](#importing-and-exporting-data)
-7. [Reports](#reports)
-8. [Scheduling](#scheduling)
-9. [Email Delivery](#email-delivery)
-10. [API Reference](#api-reference)
-11. [Troubleshooting](#troubleshooting)
+7. [Equity Tickers](#equity-tickers)
+8. [Reports](#reports)
+9. [Scheduling](#scheduling)
+10. [Email Delivery](#email-delivery)
+11. [Enterprise API](#enterprise-api)
+12. [API Reference](#api-reference)
+13. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -23,13 +25,16 @@
 
 BrasilIntel is an automated competitive intelligence system for Marsh Brasil that monitors 897 Brazilian insurers across three product categories:
 
-- **Health** (Saúde) - 515 insurers
-- **Dental** (Odontológico) - 237 insurers
+- **Health** (Saude) - 515 insurers
+- **Dental** (Odontologico) - 237 insurers
 - **Group Life** (Vida em Grupo) - 145 insurers
 
 The system automatically:
-- Scrapes news from 7 sources (Google News, Valor Econômico, InfoMoney, CQCS, ANS, Estadão, RSS feeds)
-- Uses Azure OpenAI to classify insurer status and generate summaries
+- Collects news from Factiva/Dow Jones via MMC Core API using Brazilian insurance industry codes and Portuguese keywords
+- Matches articles to tracked insurers using deterministic name matching and AI-assisted matching for ambiguous cases
+- Removes duplicate articles using URL dedup and semantic similarity (sentence-transformers)
+- Uses Azure OpenAI to classify insurer status and generate executive summaries
+- Enriches reports with B3 equity price data (ticker, price, change%) for configured insurers
 - Generates professional Marsh-branded HTML reports with PDF attachments
 - Sends daily reports via email at scheduled times
 - Sends immediate alerts when critical status is detected
@@ -42,7 +47,7 @@ The system automatically:
 
 - Python 3.11 or higher
 - Windows 10/11 or Windows Server 2019+
-- Internet connectivity for news scraping and email delivery
+- Internet connectivity for API calls and email delivery
 
 ### Installation
 
@@ -71,15 +76,16 @@ The system automatically:
 
 5. **Initialize the database:**
    ```bash
-   python -m app.main
-   # The database is created automatically on first run
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+   # Press Ctrl+C after startup, then:
+   python scripts/migrate_007_enterprise_api_tables.py
    ```
 
 ### Running the Application
 
 **Development mode:**
 ```bash
-python -m app.main
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 **Production mode (Windows Scheduled Task):**
@@ -98,7 +104,7 @@ All configuration is done via environment variables. Create a `.env` file in the
 ### Required Settings
 
 ```env
-# Azure OpenAI (for AI classification and summaries)
+# Azure OpenAI (for AI classification, matching, and summaries)
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key
 AZURE_OPENAI_DEPLOYMENT=gpt-4o
@@ -108,10 +114,19 @@ AZURE_TENANT_ID=your-tenant-id
 AZURE_CLIENT_ID=your-client-id
 AZURE_CLIENT_SECRET=your-client-secret
 SENDER_EMAIL=brasilintel@marsh.com
-
-# Apify (for web scraping)
-APIFY_TOKEN=your-apify-token
 ```
+
+### Enterprise API Settings (Optional)
+
+```env
+# MMC Core API (for Factiva news and equity prices)
+MMC_API_BASE_URL=https://mmc-dallas-int-non-prod-ingress.mgti.mmc.com
+MMC_API_CLIENT_ID=your-client-id
+MMC_API_CLIENT_SECRET=your-client-secret
+MMC_API_KEY=your-api-key
+```
+
+> When MMC credentials are not configured, the app runs normally. Enterprise features (Factiva collection, equity enrichment) are skipped gracefully.
 
 ### Optional Settings
 
@@ -136,27 +151,15 @@ REPORT_RECIPIENTS_HEALTH_CC=manager@marsh.com
 REPORT_RECIPIENTS_HEALTH_BCC=archive@marsh.com
 
 REPORT_RECIPIENTS_DENTAL=dental-team@marsh.com
-REPORT_RECIPIENTS_DENTAL_CC=
-REPORT_RECIPIENTS_DENTAL_BCC=
-
 REPORT_RECIPIENTS_GROUP_LIFE=life-team@marsh.com
-REPORT_RECIPIENTS_GROUP_LIFE_CC=
-REPORT_RECIPIENTS_GROUP_LIFE_BCC=
 
-# Scheduling (cron expressions, São Paulo timezone)
+# Scheduling (cron expressions, Sao Paulo timezone)
 SCHEDULE_HEALTH_CRON=0 6 * * *
 SCHEDULE_DENTAL_CRON=0 7 * * *
 SCHEDULE_GROUP_LIFE_CRON=0 8 * * *
 SCHEDULE_HEALTH_ENABLED=true
 SCHEDULE_DENTAL_ENABLED=true
 SCHEDULE_GROUP_LIFE_ENABLED=true
-
-# Scraping
-BATCH_SIZE=30
-BATCH_DELAY_SECONDS=2.0
-MAX_CONCURRENT_SOURCES=3
-SCRAPE_TIMEOUT_SECONDS=60
-SCRAPE_MAX_RESULTS=10
 
 # AI Features
 USE_LLM_SUMMARY=true
@@ -190,7 +193,7 @@ The dashboard displays:
    - Data directory access
    - Azure OpenAI configuration
    - Microsoft Graph configuration
-   - Apify configuration
+   - MMC Core API configuration
    - Scheduler status
 
 3. **Recent Reports** - List of recently generated reports with:
@@ -204,6 +207,7 @@ The dashboard displays:
 | Dashboard | `/admin/` | Category cards, system status, recent reports |
 | Insurers | `/admin/insurers` | View, search, enable/disable insurers |
 | Import | `/admin/import` | Upload Excel, preview, commit insurer data |
+| Equity Tickers | `/admin/equity` | Add/edit/delete insurer-to-ticker mappings |
 | Recipients | `/admin/recipients` | View configured TO/CC/BCC recipients per category |
 | Schedules | `/admin/schedules` | Toggle schedules, trigger manual runs |
 | Settings | `/admin/settings` | View system configuration and service status |
@@ -226,8 +230,8 @@ Navigate to **Insurers** in the admin menu.
 
 Click on an insurer row to edit:
 - **Name** - Display name
-- **Search Terms** - Custom search terms for news scraping (comma-separated)
-- **Enabled** - Toggle to include/exclude from scraping runs
+- **Search Terms** - Custom search terms for news matching (comma-separated)
+- **Enabled** - Toggle to include/exclude from pipeline runs
 
 ### Bulk Operations
 
@@ -270,6 +274,46 @@ Navigate to **Import** in the admin menu.
 
 ---
 
+## Equity Tickers
+
+Navigate to **Equity Tickers** in the admin sidebar to manage insurer-to-ticker mappings.
+
+### What Are Equity Tickers?
+
+Equity tickers link a tracked insurer to a B3 (Brazilian stock exchange) ticker symbol. When configured, pipeline runs fetch the latest stock price from the MMC Core API and display equity chips in reports showing:
+- Ticker symbol (e.g., SULA11)
+- Current price in R$ (Brazilian Real)
+- Percentage change with up/down arrow
+
+### Managing Tickers
+
+**Add a ticker:**
+1. Click **Add Ticker**
+2. Select an insurer from the dropdown
+3. Enter the B3 ticker symbol (e.g., SULA11, BBSE3)
+4. Exchange defaults to BVMF (B3 Brazilian exchange)
+5. Save
+
+**Edit a ticker:**
+1. Click the edit icon next to any ticker
+2. Modify the ticker symbol or exchange
+3. Save
+
+**Delete a ticker:**
+1. Click the delete icon next to any ticker
+2. Confirm deletion
+
+### How Equity Data Appears in Reports
+
+Reports display equity chips inline next to the insurer name:
+- Green chip with up arrow for positive change
+- Red chip with down arrow for negative change
+- Gray chip when data is unavailable
+
+Equity chips use inline CSS styles for compatibility with Outlook and Gmail email clients.
+
+---
+
 ## Reports
 
 ### Report Types
@@ -293,12 +337,13 @@ Each report includes:
    - Watch (orange)
    - Monitor (yellow)
    - Stable (green)
-5. **News Items** - For each insurer:
+5. **Equity Data** - B3 stock price chips next to insurer names (when configured)
+6. **News Items** - For each insurer:
    - Title and summary
-   - Source attribution
+   - Source attribution (Factiva badge for enterprise-sourced articles)
    - Impact indicators
-6. **Market Context** - Regulatory updates and industry trends
-7. **Strategic Recommendations** - Action items based on findings
+7. **Market Context** - Regulatory updates and industry trends
+8. **Strategic Recommendations** - Action items based on findings
 
 ### Viewing Reports
 
@@ -320,7 +365,7 @@ Each report includes:
 
 ### Default Schedule
 
-| Category | Time (São Paulo) | Cron Expression |
+| Category | Time (Sao Paulo) | Cron Expression |
 |----------|------------------|-----------------|
 | Health | 6:00 AM | `0 6 * * *` |
 | Dental | 7:00 AM | `0 7 * * *` |
@@ -341,6 +386,22 @@ To run a category immediately:
 1. Go to **Schedules** page
 2. Click **Run Now** for the desired category
 3. Monitor progress in the run history
+
+### Pipeline Steps
+
+Each run executes the following pipeline:
+
+1. **Factiva Collection** - Fetch articles using Brazilian insurance industry codes (i82, i8200, etc.) and Portuguese keywords
+2. **URL Deduplication** - Remove articles with duplicate URLs
+3. **Semantic Deduplication** - Remove near-duplicate articles using sentence-transformers embeddings
+4. **Insurer Matching** - Match articles to insurers:
+   - Deterministic: name/search_term word-boundary matching with Portuguese accent normalization
+   - AI: Azure OpenAI for ambiguous articles (structured output)
+   - Sentinel: "Noticias Gerais" captures unmatched articles
+5. **AI Classification** - Classify insurer status (Critical/Watch/Monitor/Stable)
+6. **Equity Enrichment** - Fetch B3 stock prices for configured tickers
+7. **Report Generation** - Marsh-branded HTML with equity chips
+8. **Email Delivery** - Send via Microsoft Graph with PDF attachment
 
 ---
 
@@ -363,7 +424,7 @@ REPORT_RECIPIENTS_HEALTH_BCC=archive@marsh.com
 
 ### Email Types
 
-1. **Daily Digest** - Scheduled report with PDF attachment
+1. **Daily Digest** - Scheduled report with PDF attachment and equity data
 2. **Critical Alert** - Immediate notification when Critical status detected
 
 ### Critical Alerts
@@ -373,6 +434,49 @@ When an insurer is classified as **Critical**, the system:
 2. Uses a distinct red-themed template
 3. Includes only the critical insurer details
 4. Subject line: `[CRITICAL ALERT] BrasilIntel - {Category}`
+
+---
+
+## Enterprise API
+
+BrasilIntel integrates with MMC Core API (Apigee gateway) for enterprise-grade data:
+
+### Authentication
+
+- OAuth2 client credentials flow
+- Automatic token refresh with 5-minute margin before expiry
+- All API calls logged to `api_events` table
+
+### Factiva News Collection
+
+- Fetches articles from Dow Jones Factiva Recent News endpoint
+- Uses Brazilian insurance industry codes: i82, i8200, i82001, i82002, i82003
+- Portuguese keyword filtering: seguro, seguradora, resseguro, etc.
+- 48-hour date window with cross-run dedup overlap
+- Full article body retrieval (not just headlines)
+
+### Equity Price Data
+
+- Fetches B3 stock prices from MMC Core API Equity Price endpoint
+- Per-run caching prevents duplicate API calls
+- Graceful degradation when API is unavailable
+
+### API Event Logging
+
+Every enterprise API call is recorded in the `api_events` table:
+- Event type (token request, news fetch, equity lookup)
+- Timestamp, status code, response time
+- Useful for monitoring API health and costs
+
+### Validation Scripts
+
+```powershell
+# Test MMC authentication
+python scripts/test_auth.py
+
+# Test Factiva collection end-to-end
+python scripts/test_factiva.py
+```
 
 ---
 
@@ -458,18 +562,6 @@ GET /api/reports/preview             # Preview report template
 ADMIN_PASSWORD=your-secure-password
 ```
 
-#### "Apify token not configured"
-
-**Cause:** News scraping requires an Apify API token.
-
-**Solution:**
-1. Create an account at [apify.com](https://apify.com)
-2. Get your API token from Settings > Integrations
-3. Add to `.env`:
-   ```env
-   APIFY_TOKEN=your-token
-   ```
-
 #### "Azure OpenAI not configured"
 
 **Cause:** AI classification and summaries require Azure OpenAI.
@@ -480,6 +572,29 @@ AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key
 AZURE_OPENAI_DEPLOYMENT=gpt-4o
 ```
+
+#### "Enterprise features skipped"
+
+**Cause:** MMC Core API credentials not configured.
+
+**Solution:**
+1. Add MMC credentials to `.env`:
+   ```env
+   MMC_API_BASE_URL=https://mmc-dallas-int-non-prod-ingress.mgti.mmc.com
+   MMC_API_CLIENT_ID=your-client-id
+   MMC_API_CLIENT_SECRET=your-client-secret
+   MMC_API_KEY=your-api-key
+   ```
+2. Validate: `python scripts/test_auth.py`
+
+#### "No equity chips in reports"
+
+**Cause:** No equity tickers configured or MMC API not available.
+
+**Solution:**
+1. Go to `/admin/equity` and add ticker mappings
+2. Verify MMC credentials are configured
+3. Run a test: `python scripts/test_auth.py`
 
 #### "Email delivery failed"
 
@@ -544,8 +659,9 @@ LOG_LEVEL=INFO
 
 For additional support:
 1. Check the logs in `data/logs/`
-2. Review the API documentation at `/docs`
-3. Contact the development team
+2. Validate enterprise auth: `python scripts/test_auth.py`
+3. Review the API documentation at `/docs`
+4. Contact the development team
 
 ---
 
@@ -567,28 +683,34 @@ The AI classification identifies specific event types:
 | Indicator | Portuguese | Description |
 |-----------|------------|-------------|
 | financial_crisis | Crise Financeira | Financial distress or insolvency risk |
-| regulatory_action | Ação Regulatória | ANS intervention or sanctions |
-| merger_acquisition | Fusão/Aquisição | M&A activity |
-| leadership_change | Mudança de Liderança | Executive changes |
-| market_expansion | Expansão de Mercado | Growth or new markets |
-| product_launch | Lançamento de Produto | New products or services |
+| regulatory_action | Acao Regulatoria | ANS intervention or sanctions |
+| merger_acquisition | Fusao/Aquisicao | M&A activity |
+| leadership_change | Mudanca de Lideranca | Executive changes |
+| market_expansion | Expansao de Mercado | Growth or new markets |
+| product_launch | Lancamento de Produto | New products or services |
 | legal_dispute | Disputa Legal | Lawsuits or legal issues |
 | partnership | Parceria | Strategic partnerships |
 | technology_investment | Investimento em Tecnologia | Tech or digital transformation |
-| customer_complaint | Reclamação de Clientes | Service quality issues |
+| customer_complaint | Reclamacao de Clientes | Service quality issues |
 
-### News Sources
+### News Source
 
 | Source | Type | Coverage |
 |--------|------|----------|
-| Google News | Apify Scraper | General news mentions |
-| Valor Econômico | Apify Scraper | Business/financial news |
-| InfoMoney | Apify Scraper | Financial news |
-| CQCS | Apify Scraper | Insurance industry news |
-| ANS | RSS Feed | Official regulatory releases |
-| Estadão | Apify Scraper | General news |
-| RSS (generic) | RSS Feed | Configurable RSS sources |
+| Factiva (Dow Jones) | MMC Core API | Enterprise-grade news via Brazilian insurance industry codes and Portuguese keyword filtering |
+
+> **Note:** In v1.0, news was collected from 7 Apify-based sources (Google News, Valor Economico, InfoMoney, CQCS, ANS, Estadao, RSS). v1.1 replaced all sources with Factiva via MMC Core API. Legacy Apify source code remains in the codebase but is not used in the active pipeline.
+
+### Insurer Matching
+
+Articles are matched to insurers through a two-stage process:
+
+1. **Deterministic Matching** - Word-boundary regex matching against insurer names and search terms with Portuguese accent normalization (NFKD). Names shorter than 4 characters are routed to AI to avoid false positives.
+
+2. **AI-Assisted Matching** - Azure OpenAI receives the article text and a list of insurers, returning structured match results. An anti-hallucination guard filters out any insurer IDs not in the provided list.
+
+3. **Sentinel Insurer** - Articles that match no insurer are assigned to "Noticias Gerais" (ANS 000000) to ensure no data loss.
 
 ---
 
-*BrasilIntel v1.0 — [SamuraiJenkinz/BrasilIntel](https://github.com/SamuraiJenkinz/BrasilIntel)*
+*BrasilIntel v1.1 -- [SamuraiJenkinz/BrasilIntel](https://github.com/SamuraiJenkinz/BrasilIntel)*

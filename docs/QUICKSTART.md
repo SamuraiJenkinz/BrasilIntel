@@ -9,7 +9,7 @@ Get up and running in 5 minutes.
 - Python 3.11+
 - Azure OpenAI API access
 - Microsoft 365 (for email delivery)
-- Apify account (for web scraping)
+- MMC Core API credentials (optional - for Factiva news and equity prices)
 
 ---
 
@@ -51,9 +51,6 @@ AZURE_CLIENT_ID=your-client-id
 AZURE_CLIENT_SECRET=your-client-secret
 SENDER_EMAIL=brasilintel@yourcompany.com
 
-# Web Scraping
-APIFY_TOKEN=your-apify-token
-
 # Admin Login
 ADMIN_PASSWORD=your-secure-password
 
@@ -63,9 +60,34 @@ REPORT_RECIPIENTS_DENTAL=dental-team@company.com
 REPORT_RECIPIENTS_GROUP_LIFE=life-team@company.com
 ```
 
+**Enterprise API (optional - for Factiva and equity prices):**
+
+```env
+# MMC Core API
+MMC_API_BASE_URL=https://mmc-dallas-int-non-prod-ingress.mgti.mmc.com
+MMC_API_CLIENT_ID=your-client-id
+MMC_API_CLIENT_SECRET=your-client-secret
+MMC_API_KEY=your-api-key
+```
+
+> Without MMC credentials, the app runs normally but enterprise features (Factiva collection, equity enrichment) are skipped.
+
 ---
 
-## 4. Start
+## 4. Initialize Database
+
+```powershell
+# Start once to create base tables
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+# Press Ctrl+C after "Application startup complete"
+
+# Run enterprise migrations
+python scripts/migrate_007_enterprise_api_tables.py
+```
+
+---
+
+## 5. Start
 
 ```powershell
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -77,7 +99,7 @@ Login with `admin` / your configured password.
 
 ---
 
-## 5. Import Insurers
+## 6. Import Insurers
 
 1. Go to **Import** in the admin menu
 2. Upload your Excel file with columns:
@@ -88,7 +110,27 @@ Login with `admin` / your configured password.
 
 ---
 
-## 6. Run Your First Report
+## 7. Validate Enterprise API (Optional)
+
+If you configured MMC Core API credentials:
+
+```powershell
+# Test authentication
+python scripts/test_auth.py
+
+# Test Factiva collection
+python scripts/test_factiva.py
+```
+
+### Configure Equity Tickers
+
+1. Go to **Equity Tickers** in the admin sidebar
+2. Add ticker mappings (e.g., SulAmerica -> SULA11, exchange BVMF)
+3. Equity chips will appear in reports for mapped insurers
+
+---
+
+## 8. Run Your First Report
 
 **Option A: Admin Dashboard**
 1. Go to **Schedules**
@@ -103,7 +145,7 @@ curl -X POST "http://localhost:8000/api/runs/execute/category" ^
 
 ---
 
-## 7. Schedule Daily Reports
+## 9. Schedule Daily Reports
 
 Run PowerShell as Administrator:
 
@@ -112,7 +154,7 @@ Run PowerShell as Administrator:
 ```
 
 This creates scheduled tasks:
-| Category | Time (São Paulo) |
+| Category | Time (Sao Paulo) |
 |----------|------------------|
 | Health | 6:00 AM |
 | Dental | 7:00 AM |
@@ -131,6 +173,7 @@ Check status:
 - **Dashboard**: http://localhost:8000/admin/
 - **Insurers**: View/edit monitored insurers
 - **Import**: Upload insurer data
+- **Equity Tickers**: Manage insurer-to-ticker mappings (B3/BVMF)
 - **Recipients**: View configured email recipients per category
 - **Schedules**: Manage automated runs and trigger manual runs
 - **Settings**: View system configuration status
@@ -145,6 +188,12 @@ Check status:
 
 # View logs
 .\deploy\manage_service.ps1 -Action logs -Category health
+
+# Validate enterprise auth
+python scripts\test_auth.py
+
+# Validate Factiva collection
+python scripts\test_factiva.py
 ```
 
 ### API Endpoints
@@ -160,14 +209,29 @@ Check status:
 
 ---
 
+## Pipeline Flow
+
+Each scheduled run executes this pipeline:
+
+1. **Collect** - Fetch articles from Factiva (Brazilian insurance codes + Portuguese keywords)
+2. **Deduplicate** - Remove duplicates by URL, then by semantic similarity
+3. **Match** - Assign articles to insurers (deterministic name match, then AI for ambiguous)
+4. **Classify** - Azure OpenAI classifies insurer status (Critical/Watch/Monitor/Stable)
+5. **Enrich** - Fetch B3 equity prices for configured tickers
+6. **Report** - Generate Marsh-branded HTML report with equity chips
+7. **Deliver** - Email report with PDF attachment via Microsoft Graph
+
+---
+
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | "Admin password not configured" | Set `ADMIN_PASSWORD` in `.env` |
 | "Azure OpenAI not configured" | Set all `AZURE_OPENAI_*` variables |
-| "Apify token not configured" | Set `APIFY_TOKEN` in `.env` |
 | Port 8000 in use | Change `PORT` in `.env` or kill existing process |
+| Enterprise features skipped | Set `MMC_API_*` variables, run `python scripts/test_auth.py` |
+| No equity chips in reports | Add ticker mappings at `/admin/equity` |
 
 ---
 
@@ -179,4 +243,4 @@ Check status:
 
 ---
 
-*BrasilIntel v1.0 — [SamuraiJenkinz/BrasilIntel](https://github.com/SamuraiJenkinz/BrasilIntel)*
+*BrasilIntel v1.1 -- [SamuraiJenkinz/BrasilIntel](https://github.com/SamuraiJenkinz/BrasilIntel)*

@@ -1,7 +1,7 @@
 # BrasilIntel Feature Backlog
 
-**Version:** v1.1 Candidates
-**Last Updated:** 2026-02-05
+**Version:** v1.2 Candidates
+**Last Updated:** 2026-02-19
 
 ---
 
@@ -12,12 +12,12 @@
 - [ ] **Cancel Run Button** - Ability to abort a run in progress from the admin UI
   - Add cancel endpoint to API
   - Add cancel button to Schedules page
-  - Gracefully stop scraping tasks
+  - Gracefully stop pipeline tasks
   - Mark run as "cancelled" status
 
 - [ ] **Progress Indicator** - Real-time visibility into run progress
   - Show "Processing X of Y insurers"
-  - Display current source being scraped
+  - Display current pipeline stage
   - Update dashboard in real-time (WebSocket or polling)
   - Show estimated time remaining
 
@@ -39,18 +39,14 @@
   - Option to delete by category or all
   - Useful for re-importing updated data
 
-- [x] **Recipients Viewer via UI** - View configured email recipients per category
-  - Recipients page shows TO/CC/BCC per category
-  - Reads from environment configuration
-
-- [x] **Run History on Dashboard** - View past runs with details
-  - Dashboard cards show last run status and time
-  - Recent reports section with date and category
-
 - [ ] **Insurer Search Improvements**
   - Advanced filtering (by status, last activity)
   - Bulk edit search terms
   - Import/export search term overrides
+
+- [ ] **Sentinel Insurer Management** - Filter/hide "Noticias Gerais" noise
+  - Toggle visibility in reports
+  - Bulk reassign to correct insurer
 
 ### Reporting
 
@@ -63,6 +59,14 @@
   - Status history per insurer
   - Trend charts on dashboard
   - Alert on status changes
+
+### Enterprise API
+
+- [ ] **API Cost Dashboard** - Monitor enterprise API usage and costs
+  - Factiva call volume and article counts
+  - Equity price lookup frequency
+  - Token refresh patterns
+  - Based on api_events table data
 
 ---
 
@@ -82,15 +86,26 @@
 
 ### Performance
 
-- [ ] **Parallel Source Scraping** - Faster runs
-  - Scrape multiple sources simultaneously
-  - Configurable concurrency
-
 - [ ] **Caching Layer** - Reduce redundant API calls
-  - Cache news results for configurable duration
+  - Cache Factiva results for configurable duration
   - Skip unchanged insurers
 
 ---
+
+## Completed (v1.1)
+
+- [x] Factiva news collection via MMC Core API (replaces all 7 Apify sources)
+- [x] OAuth2 client credentials token management with auto-refresh
+- [x] API event logging for all enterprise API calls
+- [x] Semantic deduplication using sentence-transformers
+- [x] Deterministic insurer matching (name + search term, Portuguese accent normalization)
+- [x] AI-assisted insurer matching (Azure OpenAI structured output)
+- [x] Sentinel insurer ("Noticias Gerais") for unmatched articles
+- [x] Equity price enrichment via MMC Core API (B3/BVMF tickers)
+- [x] Equity ticker admin CRUD page
+- [x] Equity chips in reports (email-compatible inline styles)
+- [x] Enterprise API validation scripts (test_auth.py, test_factiva.py)
+- [x] Migration 007 (api_events, factiva_config, equity_tickers tables)
 
 ## Completed (v1.0)
 
