@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 11 of 15 (Insurer Matching Pipeline) — IN PROGRESS
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-02-19 — Completed 11-01-PLAN.md (Deterministic insurer matching)
+Last activity: 2026-02-19 — Completed 11-02-PLAN.md (AI-assisted insurer matching)
 
-Progress: v1.0 [##########] 100% | v1.1 [#####.....] 53%
+Progress: v1.0 [##########] 100% | v1.1 [######....] 60%
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: v1.0 [##########] 100% | v1.1 [#####.....] 53%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 8
-- Average duration: 7.1 min
-- Total execution time: 57 min
+- Total plans completed: 9
+- Average duration: 6.7 min
+- Total execution time: 60 min
 
 **By Phase (v1.1):**
 
@@ -34,7 +34,7 @@ Progress: v1.0 [##########] 100% | v1.1 [#####.....] 53%
 |-------|-------|-------|----------|
 | 9. Enterprise API Foundation | 3/3 COMPLETE | 7 min | 2.3 min |
 | 10. Factiva News Collection | 3/3 COMPLETE | 48 min | 16 min |
-| 11. Insurer Matching Pipeline | 1/3 | 2 min | 2 min |
+| 11. Insurer Matching Pipeline | 2/3 | 5 min | 2.5 min |
 
 *Updated after each plan completion*
 
@@ -72,6 +72,10 @@ v1.1 decisions:
 | Word-boundary regex | \b{re.escape(name)}\b prevents substring false positives (Porto doesn't match 'reportar') | 11-01 |
 | Multi-match limit 2-3 | Articles mentioning 2-3 insurers return deterministic_multi; >3 routed to AI | 11-01 |
 | Confidence scoring | Single match 0.95, multi-match 0.85, unmatched 0.0 | 11-01 |
+| MAX_INSURER_CONTEXT=200 | AI matcher limits insurer context to 200 entries (token optimization), sorts enabled=True first | 11-02 |
+| Reuse NEWS_FETCH for AI | ApiEventType.NEWS_FETCH reused for AI matching (api_name='ai_matcher' distinguishes from Factiva) | 11-02 |
+| AI hallucination guard | Filter returned insurer_ids to only include valid IDs from provided list | 11-02 |
+| Portuguese AI prompt | System prompt in Portuguese for consistency with classifier.py output style | 11-02 |
 
 ### Pending Todos
 
@@ -87,10 +91,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-20T01:16:05Z
-Stopped at: Completed 11-01-PLAN.md — Deterministic insurer matching with Portuguese accent normalization
-Resume file: .planning/phases/11-insurer-matching-pipeline/11-01-SUMMARY.md
+Last session: 2026-02-20T01:21:25Z
+Stopped at: Completed 11-02-PLAN.md — AI-assisted insurer matching with hallucination guard
+Resume file: .planning/phases/11-insurer-matching-pipeline/11-02-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-19 after 11-01 completion*
+*Last updated: 2026-02-19 after 11-02 completion*
