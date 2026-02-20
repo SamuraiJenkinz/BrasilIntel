@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 
 ## Current Position
 
-Phase: 11 of 15 (Insurer Matching Pipeline) — IN PROGRESS
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-02-19 — Completed 11-02-PLAN.md (AI-assisted insurer matching)
+Phase: 11 of 15 (Insurer Matching Pipeline) — COMPLETE
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-02-19 — Completed 11-03-PLAN.md (Pipeline integration with Factiva + matching)
 
-Progress: v1.0 [##########] 100% | v1.1 [######....] 60%
+Progress: v1.0 [##########] 100% | v1.1 [#######...] 67%
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: v1.0 [##########] 100% | v1.1 [######....] 60%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 9
-- Average duration: 6.7 min
-- Total execution time: 60 min
+- Total plans completed: 10
+- Average duration: 7.2 min
+- Total execution time: 72 min
 
 **By Phase (v1.1):**
 
@@ -34,7 +34,7 @@ Progress: v1.0 [##########] 100% | v1.1 [######....] 60%
 |-------|-------|-------|----------|
 | 9. Enterprise API Foundation | 3/3 COMPLETE | 7 min | 2.3 min |
 | 10. Factiva News Collection | 3/3 COMPLETE | 48 min | 16 min |
-| 11. Insurer Matching Pipeline | 2/3 | 5 min | 2.5 min |
+| 11. Insurer Matching Pipeline | 3/3 COMPLETE | 17 min | 5.7 min |
 
 *Updated after each plan completion*
 
@@ -76,6 +76,10 @@ v1.1 decisions:
 | Reuse NEWS_FETCH for AI | ApiEventType.NEWS_FETCH reused for AI matching (api_name='ai_matcher' distinguishes from Factiva) | 11-02 |
 | AI hallucination guard | Filter returned insurer_ids to only include valid IDs from provided list | 11-02 |
 | Portuguese AI prompt | System prompt in Portuguese for consistency with classifier.py output style | 11-02 |
+| Sentinel insurer for unmatched | "Noticias Gerais" (ANS 000000) stores unmatched articles — ensures no data loss | 11-03 |
+| 3-insurer cap per article | Multi-insurer articles capped at 3 NewsItem rows to prevent runaway duplication | 11-03 |
+| Category-filtered matching | Each run only matches against insurers in requested category (Health, Dental, or Group Life) | 11-03 |
+| insurer_id deprecated | ExecuteRequest.insurer_id deprecated — batch Factiva collection doesn't support per-insurer filtering | 11-03 |
 
 ### Pending Todos
 
@@ -83,18 +87,21 @@ None.
 
 ### Blockers/Concerns
 
-- **ACTION REQUIRED before Phase 11 testing:** Staging MMC credentials must be added to .env and validated with `python scripts/test_auth.py` (Phase 9) and `python scripts/test_factiva.py` (Phase 10)
-- Phase 11 insurer matching complexity: 897 insurers, batch articles, AI disambiguation cost needs monitoring
-- First semantic dedup run downloads all-MiniLM-L6-v2 model (~80MB, ~30s) — may trigger during Phase 11 pipeline dev
-- Cleanup (Phase 15) must NOT run until Phase 11 is confirmed working in pipeline
+- **ACTION REQUIRED before Phase 12 testing:** Staging MMC credentials must be added to .env and validated with `python scripts/test_auth.py` (Phase 9) and `python scripts/test_factiva.py` (Phase 10)
+- **READY for production:** Phase 11 complete — Factiva pipeline integrated with deterministic + AI matching
+- First production run will validate Factiva → matcher → classifier performance under real article volume
+- Sentinel insurer may accumulate noise — Phase 13 admin dashboard should provide filtering/hiding
+- 3-insurer cap may be restrictive for industry-wide news — monitor in production
+- AI matching costs will increase with Factiva volume — ApiEvent monitoring critical for Phase 13
+- Old ScraperService functions remain unused (technical debt) — remove in future cleanup phase
 - Windows Long Path error with msgraph-sdk on `pip install -r requirements.txt` — pre-existing, not caused by Phase 9
 
 ## Session Continuity
 
-Last session: 2026-02-20T01:21:25Z
-Stopped at: Completed 11-02-PLAN.md — AI-assisted insurer matching with hallucination guard
-Resume file: .planning/phases/11-insurer-matching-pipeline/11-02-SUMMARY.md
+Last session: 2026-02-19T20:27:00Z
+Stopped at: Completed 11-03-PLAN.md — Pipeline integration (Factiva + matching + dedup) — Phase 11 COMPLETE
+Resume file: .planning/phases/11-insurer-matching-pipeline/11-03-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-19 after 11-02 completion*
+*Last updated: 2026-02-19 after 11-03 completion*
