@@ -36,12 +36,12 @@
 
 ### Admin Dashboard Extensions (ADMN)
 
-- [ ] **ADMN-17**: Dashboard shows enterprise API health panel (auth status, API connectivity, last success/failure times)
-- [ ] **ADMN-18**: Admin can configure MMC Core API credentials (API key, client ID, client secret) via settings UI
-- [ ] **ADMN-19**: Admin can configure Factiva query parameters (industry codes, keywords, date range) via dedicated page
-- [ ] **ADMN-20**: Admin can manage equity ticker mappings (insurer → B3 ticker CRUD) via dedicated page
-- [ ] **ADMN-21**: Dashboard shows fallback event log (enterprise → Graph fallback history with timestamps and reasons)
-- [ ] **ADMN-22**: Article listings show source badge indicating Factiva attribution
+- [x] **ADMN-17**: Dashboard shows enterprise API health panel (auth status, API connectivity, last success/failure times)
+- [x] **ADMN-18**: Admin can configure MMC Core API credentials (API key, client ID, client secret) via settings UI
+- [x] **ADMN-19**: Admin can configure Factiva query parameters (industry codes, keywords, date range) via dedicated page
+- [x] **ADMN-20**: Admin can manage equity ticker mappings (insurer → B3 ticker CRUD) via dedicated page
+- [x] **ADMN-21**: Dashboard shows fallback event log (enterprise → Graph fallback history with timestamps and reasons)
+- [x] **ADMN-22**: Article listings show source badge indicating Factiva attribution
 
 ### Cleanup (CLNP)
 
@@ -82,21 +82,21 @@
 | EQTY-02 | Phase 12 | 12-02 | Complete |
 | EQTY-03 | Phase 12 | 12-03 | Complete |
 | EQTY-04 | Phase 12 | 12-03 | Complete |
-| EEML-01 | Phase 13 | 13-01 | Pending |
-| EEML-02 | Phase 13 | 13-01 | Pending |
-| EEML-03 | Phase 13 | 13-02 | Pending |
-| EEML-04 | Phase 13 | 13-01 | Pending |
-| EEML-05 | Phase 13 | 13-02 | Pending |
-| ADMN-17 | Phase 14 | 14-01 | Pending |
-| ADMN-18 | Phase 14 | 14-02 | Pending |
-| ADMN-19 | Phase 14 | 14-03 | Pending |
+| EEML-01 | — | — | Removed (Graph API retained) |
+| EEML-02 | — | — | Removed (Graph API retained) |
+| EEML-03 | — | — | Removed (Graph API retained) |
+| EEML-04 | — | — | Removed (Graph API retained) |
+| EEML-05 | — | — | Removed (Graph API retained) |
+| ADMN-17 | Phase 13 | 13-01 | Complete |
+| ADMN-18 | Phase 13 | 13-02 | Complete |
+| ADMN-19 | Phase 13 | 13-02 | Complete |
 | ADMN-20 | Phase 12 | 12-02 | Complete |
-| ADMN-21 | Phase 14 | 14-04 | Pending |
-| ADMN-22 | Phase 14 | 14-05 | Pending |
-| CLNP-01 | Phase 15 | 15-01 | Pending |
-| CLNP-02 | Phase 15 | 15-01 | Pending |
-| CLNP-03 | Phase 15 | 15-02 | Pending |
-| CLNP-04 | Phase 15 | 15-02 | Pending |
+| ADMN-21 | Phase 13 | 13-01 | Complete |
+| ADMN-22 | Phase 13 | 13-03 | Complete |
+| CLNP-01 | Phase 14 | 14-01 | Pending |
+| CLNP-02 | Phase 14 | 14-01 | Pending |
+| CLNP-03 | Phase 14 | 14-02 | Pending |
+| CLNP-04 | Phase 14 | 14-02 | Pending |
 
 ---
 *Created: 2026-02-19 for milestone v1.1*

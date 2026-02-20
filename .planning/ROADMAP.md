@@ -108,9 +108,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Enterprise API health panel + fallback event log on dashboard (ADMN-17)
-- [ ] 13-02-PLAN.md — Enterprise Config credentials page + Factiva query config page with date range (ADMN-18, ADMN-19)
-- [ ] 13-03-PLAN.md — Factiva source badges in report templates (ADMN-22)
+- [x] 13-01-PLAN.md — Enterprise API health panel + fallback event log on dashboard (ADMN-17)
+- [x] 13-02-PLAN.md — Enterprise Config credentials page + Factiva query config page with date range (ADMN-18, ADMN-19)
+- [x] 13-03-PLAN.md — Factiva source badges in report templates (ADMN-22)
 
 #### Phase 14: Apify Cleanup
 
@@ -149,5 +149,5 @@ Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize wit
 | 10. Factiva News Collection | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 11. Insurer Matching Pipeline | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 12. Equity Price Enrichment | v1.1 | 3/3 | Complete | 2026-02-19 |
-| 13. Admin Dashboard Extensions | v1.1 | 0/3 | Not started | - |
+| 13. Admin Dashboard Extensions | v1.1 | 3/3 | Complete | 2026-02-20 |
 | 14. Apify Cleanup | v1.1 | 0/2 | Not started | - |
