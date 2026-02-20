@@ -21,6 +21,7 @@ from app.dependencies import (
 )
 from app.models.insurer import Insurer
 from app.models.run import Run
+from app.models.equity_ticker import EquityTicker
 from app.services.excel_service import parse_excel_insurers
 from app.services.scheduler_service import SchedulerService
 from app.services.report_archiver import ReportArchiver
@@ -1072,4 +1073,329 @@ async def settings_page(
             "relevance_config": relevance_config,
             "use_llm_summary": settings.use_llm_summary,
         }
+    )
+
+
+# ----- Equity Ticker Routes -----
+
+@router.get("/equity", response_class=HTMLResponse, name="admin_equity")
+async def equity(
+    request: Request,
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> HTMLResponse:
+    """
+    Equity ticker mapping management page.
+
+    Lists all EquityTicker rows with add/edit/delete capability.
+    Used by admin to configure entity-to-ticker mappings for equity price enrichment.
+
+    Args:
+        request: FastAPI request object
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        HTML equity ticker management page
+    """
+    tickers = db.query(EquityTicker).order_by(EquityTicker.entity_name).all()
+
+    # Read optional flash messages from query params
+    success = request.query_params.get("success")
+    error = request.query_params.get("error")
+
+    return templates.TemplateResponse(
+        "admin/equity.html",
+        {
+            "request": request,
+            "tickers": tickers,
+            "active": "equity",
+            "username": username,
+            "success": success,
+            "error": error,
+        }
+    )
+
+
+@router.post("/equity", response_class=HTMLResponse, name="admin_equity_add")
+async def equity_add(
+    request: Request,
+    entity_name: str = Form(""),
+    ticker: str = Form(""),
+    exchange: str = Form("BVMF"),
+    enabled: str = Form("off"),
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> RedirectResponse:
+    """
+    Add a new entity-to-ticker mapping.
+
+    Validates entity_name is non-empty and unique (case-insensitive).
+    Redirects to /admin/equity with success or error flash message.
+
+    Args:
+        request: FastAPI request object
+        entity_name: Company name as extracted by AI classifier
+        ticker: Exchange ticker symbol (e.g. "BBSE3")
+        exchange: Exchange code (e.g. "BVMF")
+        enabled: Checkbox value ("on", "true", "1", "yes" = True)
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        Redirect to equity list with flash message
+    """
+    entity_name = entity_name.strip()
+    ticker_symbol = ticker.strip().upper()
+    exchange_code = exchange.strip().upper() or "BVMF"
+    is_enabled = enabled.lower() in ("on", "true", "1", "yes")
+
+    # Validate required fields
+    if not entity_name:
+        return RedirectResponse(
+            url="/admin/equity?error=Entity+name+is+required",
+            status_code=303,
+        )
+    if not ticker_symbol:
+        return RedirectResponse(
+            url="/admin/equity?error=Ticker+symbol+is+required",
+            status_code=303,
+        )
+
+    # Check uniqueness — case-insensitive match
+    existing = db.query(EquityTicker).filter(
+        func.lower(EquityTicker.entity_name) == entity_name.lower()
+    ).first()
+    if existing:
+        return RedirectResponse(
+            url=f"/admin/equity?error=A+mapping+for+'{entity_name}'+already+exists",
+            status_code=303,
+        )
+
+    new_ticker = EquityTicker(
+        entity_name=entity_name,
+        ticker=ticker_symbol,
+        exchange=exchange_code,
+        enabled=is_enabled,
+        updated_at=datetime.utcnow(),
+        updated_by=username,
+    )
+    db.add(new_ticker)
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/admin/equity?success=Mapping+for+'{entity_name}'+added+successfully",
+        status_code=303,
+    )
+
+
+@router.get("/equity/edit/{ticker_id}", response_class=HTMLResponse, name="admin_equity_edit")
+async def equity_edit(
+    request: Request,
+    ticker_id: int,
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> HTMLResponse:
+    """
+    Render edit form for a single equity ticker mapping.
+
+    Args:
+        request: FastAPI request object
+        ticker_id: EquityTicker row id to edit
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        HTML edit page with fields pre-populated
+    """
+    from fastapi import HTTPException
+
+    ticker_row = db.query(EquityTicker).filter(EquityTicker.id == ticker_id).first()
+    if not ticker_row:
+        raise HTTPException(status_code=404, detail="Ticker mapping not found")
+
+    # Get all tickers for the list view
+    tickers = db.query(EquityTicker).order_by(EquityTicker.entity_name).all()
+
+    return templates.TemplateResponse(
+        "admin/equity.html",
+        {
+            "request": request,
+            "tickers": tickers,
+            "edit_ticker": ticker_row,
+            "active": "equity",
+            "username": username,
+        }
+    )
+
+
+@router.post("/equity/edit/{ticker_id}", response_class=HTMLResponse, name="admin_equity_update")
+async def equity_update(
+    request: Request,
+    ticker_id: int,
+    entity_name: str = Form(""),
+    ticker: str = Form(""),
+    exchange: str = Form("BVMF"),
+    enabled: str = Form("off"),
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> RedirectResponse:
+    """
+    Update an equity ticker mapping.
+
+    Validates entity_name uniqueness (excluding current row).
+    Redirects to /admin/equity with success flash message.
+
+    Args:
+        request: FastAPI request object
+        ticker_id: EquityTicker row id to update
+        entity_name: Updated company entity name
+        ticker: Updated ticker symbol
+        exchange: Updated exchange code
+        enabled: Checkbox value
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        Redirect to equity list with flash message
+    """
+    from fastapi import HTTPException
+
+    ticker_row = db.query(EquityTicker).filter(EquityTicker.id == ticker_id).first()
+    if not ticker_row:
+        raise HTTPException(status_code=404, detail="Ticker mapping not found")
+
+    entity_name = entity_name.strip()
+    ticker_symbol = ticker.strip().upper()
+    exchange_code = exchange.strip().upper() or "BVMF"
+    is_enabled = enabled.lower() in ("on", "true", "1", "yes")
+
+    # Validate required fields
+    if not entity_name:
+        return RedirectResponse(
+            url="/admin/equity?error=Entity+name+is+required",
+            status_code=303,
+        )
+    if not ticker_symbol:
+        return RedirectResponse(
+            url="/admin/equity?error=Ticker+symbol+is+required",
+            status_code=303,
+        )
+
+    # Check uniqueness — case-insensitive match excluding current row
+    existing = db.query(EquityTicker).filter(
+        func.lower(EquityTicker.entity_name) == entity_name.lower(),
+        EquityTicker.id != ticker_id
+    ).first()
+    if existing:
+        return RedirectResponse(
+            url=f"/admin/equity?error=A+mapping+for+'{entity_name}'+already+exists",
+            status_code=303,
+        )
+
+    # Update fields
+    ticker_row.entity_name = entity_name
+    ticker_row.ticker = ticker_symbol
+    ticker_row.exchange = exchange_code
+    ticker_row.enabled = is_enabled
+    ticker_row.updated_at = datetime.utcnow()
+    ticker_row.updated_by = username
+
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/admin/equity?success=Mapping+for+'{entity_name}'+updated",
+        status_code=303,
+    )
+
+
+@router.post("/equity/delete/{ticker_id}", response_class=HTMLResponse, name="admin_equity_delete")
+async def equity_delete(
+    request: Request,
+    ticker_id: int,
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> RedirectResponse:
+    """
+    Delete an equity ticker mapping by id.
+
+    Redirects to /admin/equity with success flash message.
+
+    Args:
+        request: FastAPI request object
+        ticker_id: EquityTicker row id to delete
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        Redirect to equity list with flash message
+    """
+    from fastapi import HTTPException
+
+    ticker_row = db.query(EquityTicker).filter(EquityTicker.id == ticker_id).first()
+    if not ticker_row:
+        raise HTTPException(status_code=404, detail="Ticker mapping not found")
+
+    entity_name = ticker_row.entity_name
+    db.delete(ticker_row)
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/admin/equity?success=Mapping+for+'{entity_name}'+deleted",
+        status_code=303,
+    )
+
+
+@router.post("/equity/seed", response_class=HTMLResponse, name="admin_equity_seed")
+async def equity_seed(
+    request: Request,
+    username: str = Depends(verify_admin),
+    db: Session = Depends(get_db)
+) -> RedirectResponse:
+    """
+    Seed default Brazilian insurer tickers.
+
+    Inserts 5 major Brazilian insurer tickers (only if they don't already exist).
+    Redirects to /admin/equity with success message showing how many were added.
+
+    Args:
+        request: FastAPI request object
+        username: Authenticated admin username
+        db: Database session
+
+    Returns:
+        Redirect to equity list with count of seeded tickers
+    """
+    default_tickers = [
+        {"entity_name": "BB Seguridade", "ticker": "BBSE3", "exchange": "BVMF"},
+        {"entity_name": "SulAmerica", "ticker": "SULA11", "exchange": "BVMF"},
+        {"entity_name": "Porto Seguro", "ticker": "PSSA3", "exchange": "BVMF"},
+        {"entity_name": "IRB Brasil", "ticker": "IRBR3", "exchange": "BVMF"},
+        {"entity_name": "Caixa Seguridade", "ticker": "CXSE3", "exchange": "BVMF"},
+    ]
+
+    added_count = 0
+    for default in default_tickers:
+        # Check if already exists (case-insensitive)
+        existing = db.query(EquityTicker).filter(
+            func.lower(EquityTicker.entity_name) == default["entity_name"].lower()
+        ).first()
+
+        if not existing:
+            new_ticker = EquityTicker(
+                entity_name=default["entity_name"],
+                ticker=default["ticker"],
+                exchange=default["exchange"],
+                enabled=True,
+                updated_at=datetime.utcnow(),
+                updated_by=username,
+            )
+            db.add(new_ticker)
+            added_count += 1
+
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/admin/equity?success={added_count}+default+ticker(s)+seeded",
+        status_code=303,
     )
