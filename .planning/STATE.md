@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 
 ## Current Position
 
-Phase: 12 of 15 (Equity Price Enrichment) — IN PROGRESS
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-02-19 — Completed 12-02-PLAN.md (Admin equity ticker UI)
+Phase: 12 of 15 (Equity Price Enrichment) — COMPLETE
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-02-20 — Completed 12-03-PLAN.md (Equity chip display in reports)
 
-Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
+Progress: v1.0 [##########] 100% | v1.1 [#########.] 90%
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 12
-- Average duration: 7.5 min
-- Total execution time: 99 min
+- Total plans completed: 13
+- Average duration: 7.2 min
+- Total execution time: 101 min
 
 **By Phase (v1.1):**
 
@@ -35,7 +35,7 @@ Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
 | 9. Enterprise API Foundation | 3/3 COMPLETE | 7 min | 2.3 min |
 | 10. Factiva News Collection | 3/3 COMPLETE | 48 min | 16 min |
 | 11. Insurer Matching Pipeline | 3/3 COMPLETE | 17 min | 5.7 min |
-| 12. Equity Price Enrichment | 2/3 IN PROGRESS | 27 min | 13.5 min |
+| 12. Equity Price Enrichment | 3/3 COMPLETE | 29 min | 9.7 min |
 
 *Updated after each plan completion*
 
@@ -88,6 +88,11 @@ v1.1 decisions:
 | equity_data threading | equity_data dict passed through to reporter now, will be rendered in Phase 12-03 | 12-01 |
 | BVMF default in UI | Admin equity form pre-fills exchange with "BVMF" — BrasilIntel targets Brazilian market (B3) | 12-02 |
 | Edit form in same page | equity.html handles list and edit modes via edit_ticker parameter (not separate template) | 12-02 |
+| Inline styles only | BrasilIntel has ONE template for browser AND email — all equity chip styles must be inline for Outlook/Gmail | 12-03 |
+| HTML entities for arrows | &#9650; &#9660; instead of Unicode — safer cross-client display in Outlook Word engine | 12-03 |
+| R$ Brazilian Real format | Equity chips show R$ not $ — matches local currency for B3 Brazilian insurers | 12-03 |
+| Inline-block layout | Single equity chip uses inline-block not table — simpler markup, email-safe | 12-03 |
+| Chip placement | Equity chips between insurer name and code badges — visual hierarchy: Name → Price → Codes → News | 12-03 |
 
 ### Pending Todos
 
@@ -96,8 +101,9 @@ None.
 ### Blockers/Concerns
 
 - **ACTION REQUIRED before Phase 12 testing:** Staging MMC credentials must be added to .env and validated with `python scripts/test_auth.py` (Phase 9) and `python scripts/test_factiva.py` (Phase 10)
-- **READY for production:** Phase 11 complete — Factiva pipeline integrated with deterministic + AI matching
-- First production run will validate Factiva → matcher → classifier performance under real article volume
+- **Phase 12 COMPLETE:** Equity enrichment end-to-end ready — pipeline enrichment (12-01), admin UI (12-02), report display (12-03)
+- **Email visual QA recommended:** Equity chips use inline styles for Outlook/Gmail compatibility, but real email client testing needed before production deployment
+- First production run will validate complete pipeline: Factiva → matcher → classifier → equity enrichment → report delivery
 - Sentinel insurer may accumulate noise — Phase 13 admin dashboard should provide filtering/hiding
 - 3-insurer cap may be restrictive for industry-wide news — monitor in production
 - AI matching costs will increase with Factiva volume — ApiEvent monitoring critical for Phase 13
@@ -106,10 +112,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-19T21:25:00Z
-Stopped at: Completed 12-02-PLAN.md — Admin equity ticker UI with seed defaults
-Resume file: .planning/phases/12-equity-price-enrichment/12-02-SUMMARY.md
+Last session: 2026-02-20T02:26:25Z
+Stopped at: Completed 12-03-PLAN.md — Equity chip display in reports (Phase 12 COMPLETE)
+Resume file: .planning/phases/12-equity-price-enrichment/12-03-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-19 after 12-02 completion*
+*Last updated: 2026-02-20 after 12-03 completion (Phase 12 COMPLETE)*
