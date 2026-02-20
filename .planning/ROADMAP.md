@@ -87,13 +87,12 @@ Plans:
   2. Admin can add, edit, and delete insurer-to-ticker mappings (e.g., "SulAmerica" → "SULA11") through the admin dashboard
   3. Browser report pages show equity chips (ticker symbol, current price, percentage change) next to insurer sections that have a configured ticker
   4. Email reports show the same equity data in a table-compatible layout that renders correctly in Outlook and Gmail
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 12-01: EquityClient — MMC Core API Equity Price endpoint wrapper, fetch and store prices
-- [ ] 12-02: Ticker management admin routes and UI (CRUD for EquityTicker mappings)
-- [ ] 12-03: Browser report equity chip component — inline price display in role_brief.html
-- [ ] 12-04: Email report equity table — table-based price display in role_email.html
+- [ ] 12-01-PLAN.md — EquityPriceClient service port + pipeline equity enrichment integration
+- [ ] 12-02-PLAN.md — Admin ticker CRUD routes, equity.html template, sidebar nav, seed defaults
+- [ ] 12-03-PLAN.md — Report equity chip display (email-compatible inline styles in report_professional.html)
 
 #### Phase 13: Enterprise Email Delivery
 
@@ -169,7 +168,7 @@ Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize wit
 | 9. Enterprise API Foundation | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 10. Factiva News Collection | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 11. Insurer Matching Pipeline | v1.1 | 3/3 | Complete | 2026-02-19 |
-| 12. Equity Price Enrichment | v1.1 | 0/4 | Not started | - |
+| 12. Equity Price Enrichment | v1.1 | 0/3 | Not started | - |
 | 13. Enterprise Email Delivery | v1.1 | 0/3 | Not started | - |
 | 14. Admin Dashboard Extensions | v1.1 | 0/5 | Not started | - |
 | 15. Apify Cleanup | v1.1 | 0/2 | Not started | - |
