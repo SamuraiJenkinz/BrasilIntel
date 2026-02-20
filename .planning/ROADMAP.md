@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** - Phases 1-8 (shipped 2026-02-05)
-- 🚧 **v1.1 Enterprise API Integration** - Phases 9-14 (in progress)
+- ✅ **v1.1 Enterprise API Integration** - Phases 9-14 (shipped 2026-02-20)
 
 ## Phases
 
@@ -20,7 +20,7 @@ Phases 1-8 delivered: data foundation, vertical slice validation, 6-source news 
 
 ---
 
-### 🚧 v1.1 Enterprise API Integration (In Progress)
+### ✅ v1.1 Enterprise API Integration (Shipped 2026-02-20)
 
 **Milestone Goal:** Replace Apify web scraping with Factiva/Dow Jones as the sole news source, add inline equity price data for tracked Brazilian insurance companies, extend admin dashboard with enterprise API visibility, and clean up legacy Apify infrastructure — porting the proven enterprise integration patterns from MDInsights into BrasilIntel.
 
@@ -125,8 +125,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Delete Apify source files, dead services (scraper, batch_processor, relevance_scorer), dead tests, and remove apify-client/feedparser from requirements.txt
-- [ ] 14-02-PLAN.md — Clean config, pipeline, admin UI of Apify/scraping references; update .env.example and docs; validate boot
+- [x] 14-01-PLAN.md — Delete Apify source files, dead services (scraper, batch_processor, relevance_scorer), dead tests, and remove apify-client/feedparser from requirements.txt
+- [x] 14-02-PLAN.md — Clean config, pipeline, admin UI of Apify/scraping references; update .env.example and docs; validate boot
 
 ---
 
@@ -150,4 +150,4 @@ Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize wit
 | 11. Insurer Matching Pipeline | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 12. Equity Price Enrichment | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 13. Admin Dashboard Extensions | v1.1 | 3/3 | Complete | 2026-02-20 |
-| 14. Apify Cleanup | v1.1 | 0/2 | Not started | - |
+| 14. Apify Cleanup | v1.1 | 2/2 | Complete | 2026-02-20 |

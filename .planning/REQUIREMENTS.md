@@ -4,10 +4,10 @@
 
 ### Authentication (AUTH)
 
-- [ ] **AUTH-01**: System acquires JWT tokens via OAuth2 client credentials grant from MMC Access Management API
-- [ ] **AUTH-02**: Token refresh happens proactively (5-min margin before expiry) so pipeline never hits mid-request expiry
-- [ ] **AUTH-03**: All API interactions (token requests, news fetches, equity lookups, email sends) are logged to an api_events table for observability
-- [ ] **AUTH-04**: When authentication fails, pipeline logs the failure and skips enterprise features gracefully (no silent crashes)
+- [x] **AUTH-01**: System acquires JWT tokens via OAuth2 client credentials grant from MMC Access Management API
+- [x] **AUTH-02**: Token refresh happens proactively (5-min margin before expiry) so pipeline never hits mid-request expiry
+- [x] **AUTH-03**: All API interactions (token requests, news fetches, equity lookups, email sends) are logged to an api_events table for observability
+- [x] **AUTH-04**: When authentication fails, pipeline logs the failure and skips enterprise features gracefully (no silent crashes)
 
 ### Factiva News Collection (FACT)
 
@@ -45,10 +45,10 @@
 
 ### Cleanup (CLNP)
 
-- [ ] **CLNP-01**: All 6 Apify scraper source classes and base class are removed from codebase
-- [ ] **CLNP-02**: apify-client and feedparser dependencies are removed from requirements.txt
-- [ ] **CLNP-03**: Pipeline collection step uses Factiva-only path (no fallback branching)
-- [ ] **CLNP-04**: .env.example is updated with MMC Core API configuration variables (replacing APIFY_TOKEN)
+- [x] **CLNP-01**: All 6 Apify scraper source classes and base class are removed from codebase
+- [x] **CLNP-02**: apify-client and feedparser dependencies are removed from requirements.txt
+- [x] **CLNP-03**: Pipeline collection step uses Factiva-only path (no fallback branching)
+- [x] **CLNP-04**: .env.example is updated with MMC Core API configuration variables (replacing APIFY_TOKEN)
 
 ## Future Requirements
 
@@ -93,10 +93,10 @@
 | ADMN-20 | Phase 12 | 12-02 | Complete |
 | ADMN-21 | Phase 13 | 13-01 | Complete |
 | ADMN-22 | Phase 13 | 13-03 | Complete |
-| CLNP-01 | Phase 14 | 14-01 | Pending |
-| CLNP-02 | Phase 14 | 14-01 | Pending |
-| CLNP-03 | Phase 14 | 14-02 | Pending |
-| CLNP-04 | Phase 14 | 14-02 | Pending |
+| CLNP-01 | Phase 14 | 14-01 | Complete |
+| CLNP-02 | Phase 14 | 14-01 | Complete |
+| CLNP-03 | Phase 14 | 14-02 | Complete |
+| CLNP-04 | Phase 14 | 14-02 | Complete |
 
 ---
 *Created: 2026-02-19 for milestone v1.1*
