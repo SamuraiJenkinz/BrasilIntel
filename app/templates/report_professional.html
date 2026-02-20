@@ -870,7 +870,14 @@
                                 </div>
                                 <div class="news-meta">
                                     {% if item.published_at %}{{ item.published_at }}{% endif %}
-                                    {% if item.source_name %} | Fonte: {{ item.source_name }}{% endif %}
+                                    {% if item.source_name %}
+ | Fonte:
+{% if item.source_name == 'Factiva' %}
+<span style="display: inline-block; background-color: #0077c8; color: white; padding: 1px 6px; border-radius: 3px; font-size: 0.75em; font-weight: 600; vertical-align: middle;">Factiva</span>
+{% else %}
+{{ item.source_name }}
+{% endif %}
+{% endif %}
                                     {% if item.sentiment %}
                                     <span class="sentiment-badge sentiment-{{ item.sentiment }}">
                                         {% if item.sentiment == 'positive' %}Positivo{% elif item.sentiment == 'negative' %}Negativo{% else %}Neutro{% endif %}
