@@ -699,7 +699,7 @@ The AI classification identifies specific event types:
 |--------|------|----------|
 | Factiva (Dow Jones) | MMC Core API | Enterprise-grade news via Brazilian insurance industry codes and Portuguese keyword filtering |
 
-> **Note:** In v1.0, news was collected from 7 Apify-based sources (Google News, Valor Economico, InfoMoney, CQCS, ANS, Estadao, RSS). v1.1 replaced all sources with Factiva via MMC Core API. Legacy Apify source code remains in the codebase but is not used in the active pipeline.
+> **Note:** In v1.0, news was collected from 7 Apify-based sources (Google News, Valor Economico, InfoMoney, CQCS, ANS, Estadao, RSS). v1.1 replaced all sources with Factiva via MMC Core API. All legacy Apify infrastructure was removed — Factiva is the sole news collection mechanism.
 
 ### Insurer Matching
 

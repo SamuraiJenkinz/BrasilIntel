@@ -211,13 +211,6 @@ def get_system_health(settings: Settings) -> dict:
         services["graph_email"] = {"status": "warning", "message": "Not configured"}
         issues.append("Graph Email not configured")
 
-    # Check Apify
-    if settings.is_apify_configured():
-        services["apify"] = {"status": "healthy", "message": "Configured"}
-    else:
-        services["apify"] = {"status": "warning", "message": "Not configured"}
-        issues.append("Apify not configured")
-
     # Determine overall status
     error_count = sum(1 for s in services.values() if s["status"] == "error")
     warning_count = sum(1 for s in services.values() if s["status"] == "warning")
@@ -1138,15 +1131,6 @@ async def settings_page(
         "classification_level": "CONFIDENTIAL",
     }
 
-    # Scraping configuration (ADMN-15)
-    scraping_config = {
-        "batch_size": settings.batch_size,
-        "batch_delay_seconds": settings.batch_delay_seconds,
-        "max_concurrent_sources": settings.max_concurrent_sources,
-        "scrape_timeout_seconds": settings.scrape_timeout_seconds,
-        "scrape_max_results": settings.scrape_max_results,
-    }
-
     # API keys - masked and unmasked for reveal toggle (ADMN-16)
     api_keys = {
         "Azure OpenAI Endpoint": {
@@ -1179,23 +1163,11 @@ async def settings_page(
             "value": settings.azure_client_secret,
             "configured": bool(settings.azure_client_secret),
         },
-        "Apify Token": {
-            "masked": mask_key(settings.apify_token),
-            "value": settings.apify_token,
-            "configured": bool(settings.apify_token),
-        },
         "Sender Email": {
             "masked": settings.sender_email,  # Email not sensitive
             "value": settings.sender_email,
             "configured": bool(settings.sender_email),
         },
-    }
-
-    # Relevance scoring configuration
-    relevance_config = {
-        "use_ai_relevance_scoring": settings.use_ai_relevance_scoring,
-        "relevance_keyword_threshold": settings.relevance_keyword_threshold,
-        "relevance_ai_batch_size": settings.relevance_ai_batch_size,
     }
 
     return templates.TemplateResponse(
@@ -1205,9 +1177,7 @@ async def settings_page(
             "username": username,
             "active": "settings",
             "branding": branding,
-            "scraping_config": scraping_config,
             "api_keys": api_keys,
-            "relevance_config": relevance_config,
             "use_llm_summary": settings.use_llm_summary,
         }
     )

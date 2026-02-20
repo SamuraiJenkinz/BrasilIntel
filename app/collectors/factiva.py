@@ -20,7 +20,7 @@ Authentication:
 
 Error handling:
     - Individual article fetch failures fall back to snippet from search result
-    - Search failures propagate to caller (pipeline handles fallback to Apify)
+    - Search failures propagate to caller (pipeline handles errors)
     - All outcomes recorded as ApiEvent(type=NEWS_FETCH) for dashboard visibility
 """
 import json
@@ -105,7 +105,7 @@ class FactivaCollector:
 
         Raises:
             Exception: If the search request itself fails after retries. The caller
-                       (pipeline) is responsible for handling the fallback to Apify.
+                       (pipeline) is responsible for error handling.
         """
         # Build date window from configurable range (default 48 hours)
         date_range_hours = int(query_params.get("date_range_hours", 48))

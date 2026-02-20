@@ -129,9 +129,6 @@ def health_check() -> dict:
             "client_id": os.getenv("MICROSOFT_CLIENT_ID"),
             "client_secret": os.getenv("MICROSOFT_CLIENT_SECRET"),
             "tenant_id": os.getenv("MICROSOFT_TENANT_ID")
-        },
-        "apify": {
-            "api_token": os.getenv("APIFY_API_TOKEN")
         }
     }
 
