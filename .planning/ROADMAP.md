@@ -122,11 +122,11 @@ Plans:
   2. requirements.txt contains no apify-client or feedparser entries
   3. The pipeline collection step has no conditional branch for Apify — only the Factiva path exists
   4. .env.example contains MMC Core API variables and APIFY_TOKEN is absent
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 14-01: Remove Apify source classes, base class, and __init__ registrations; remove apify-client and feedparser from requirements.txt
-- [ ] 14-02: Scrub pipeline of Apify branching; update .env.example and documentation
+- [ ] 14-01-PLAN.md — Delete Apify source files, dead services (scraper, batch_processor, relevance_scorer), dead tests, and remove apify-client/feedparser from requirements.txt
+- [ ] 14-02-PLAN.md — Clean config, pipeline, admin UI of Apify/scraping references; update .env.example and docs; validate boot
 
 ---
 
