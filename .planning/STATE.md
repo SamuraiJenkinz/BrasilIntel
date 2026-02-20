@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 12 of 15 (Equity Price Enrichment) — IN PROGRESS
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-02-20 — Completed 12-01-PLAN.md (Equity enrichment infrastructure)
+Last activity: 2026-02-19 — Completed 12-02-PLAN.md (Admin equity ticker UI)
 
-Progress: v1.0 [##########] 100% | v1.1 [#######...] 73%
+Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: v1.0 [##########] 100% | v1.1 [#######...] 73%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 11
-- Average duration: 7.8 min
-- Total execution time: 96 min
+- Total plans completed: 12
+- Average duration: 7.5 min
+- Total execution time: 99 min
 
 **By Phase (v1.1):**
 
@@ -35,7 +35,7 @@ Progress: v1.0 [##########] 100% | v1.1 [#######...] 73%
 | 9. Enterprise API Foundation | 3/3 COMPLETE | 7 min | 2.3 min |
 | 10. Factiva News Collection | 3/3 COMPLETE | 48 min | 16 min |
 | 11. Insurer Matching Pipeline | 3/3 COMPLETE | 17 min | 5.7 min |
-| 12. Equity Price Enrichment | 1/3 IN PROGRESS | 24 min | 24 min |
+| 12. Equity Price Enrichment | 2/3 IN PROGRESS | 27 min | 13.5 min |
 
 *Updated after each plan completion*
 
@@ -86,6 +86,8 @@ v1.1 decisions:
 | Per-run ticker caching | Equity enrichment caches prices by "TICKER:EXCHANGE" key to prevent duplicate API calls within a run | 12-01 |
 | Graceful equity degradation | Pipeline continues normally when MMC API unconfigured — enrichment returns empty dict | 12-01 |
 | equity_data threading | equity_data dict passed through to reporter now, will be rendered in Phase 12-03 | 12-01 |
+| BVMF default in UI | Admin equity form pre-fills exchange with "BVMF" — BrasilIntel targets Brazilian market (B3) | 12-02 |
+| Edit form in same page | equity.html handles list and edit modes via edit_ticker parameter (not separate template) | 12-02 |
 
 ### Pending Todos
 
@@ -104,10 +106,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-20T02:21:37Z
-Stopped at: Completed 12-01-PLAN.md — Equity enrichment infrastructure (EquityPriceClient + pipeline integration)
-Resume file: .planning/phases/12-equity-price-enrichment/12-01-SUMMARY.md
+Last session: 2026-02-19T21:25:00Z
+Stopped at: Completed 12-02-PLAN.md — Admin equity ticker UI with seed defaults
+Resume file: .planning/phases/12-equity-price-enrichment/12-02-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-20 after 12-01 completion*
+*Last updated: 2026-02-19 after 12-02 completion*
