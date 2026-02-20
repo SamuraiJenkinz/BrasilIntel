@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 
 ## Current Position
 
-Phase: 12 of 14 (Equity Price Enrichment) — COMPLETE
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-02-20 — Completed 12-03-PLAN.md (Equity chip display in reports)
+Phase: 13 of 14 (Admin Dashboard Extensions) — IN PROGRESS
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-02-20 — Completed 13-01-PLAN.md (Enterprise API health panel and fallback event log)
 
-Progress: v1.0 [##########] 100% | v1.1 [######▪...] 67%
+Progress: v1.0 [##########] 100% | v1.1 [#######▪..] 70%
 
 ## Performance Metrics
 
@@ -25,8 +25,8 @@ Progress: v1.0 [##########] 100% | v1.1 [######▪...] 67%
 
 **v1.1 Velocity:**
 - Total plans completed: 13
-- Average duration: 7.2 min
-- Total execution time: 101 min
+- Average duration: 7.0 min
+- Total execution time: 91 min
 
 **By Phase (v1.1):**
 
@@ -36,6 +36,7 @@ Progress: v1.0 [##########] 100% | v1.1 [######▪...] 67%
 | 10. Factiva News Collection | 3/3 COMPLETE | 48 min | 16 min |
 | 11. Insurer Matching Pipeline | 3/3 COMPLETE | 17 min | 5.7 min |
 | 12. Equity Price Enrichment | 3/3 COMPLETE | 29 min | 9.7 min |
+| 13. Admin Dashboard Extensions | 1/3 IN PROGRESS | 3 min | 3.0 min |
 
 *Updated after each plan completion*
 
@@ -95,6 +96,10 @@ v1.1 decisions:
 | Chip placement | Equity chips between insurer name and code badges — visual hierarchy: Name → Price → Codes → News | 12-03 |
 | Stay with Graph API | Enterprise email delivery removed — Graph API sufficient, no MMC email port needed | Pre-13 |
 | Phase renumber | Old Phase 13 (Enterprise Email) removed, 14→13 (Admin Dashboard), 15→14 (Apify Cleanup) | Pre-13 |
+| BrasilIntel has 3 enterprise APIs | auth, news, equity only — email not yet implemented in Phase 13 (unlike MDInsights) | 13-01 |
+| Overall status from most recent | API status = most recent event (success or failure); degraded if fallback, offline if failure | 13-01 |
+| Separate timestamp queries | Query most recent success AND failure separately for full visibility into API behavior over time | 13-01 |
+| Fallback log includes TOKEN_FAILED | Auth failures visible in ops log alongside NEWS_FALLBACK, EQUITY_FALLBACK, EMAIL_FALLBACK | 13-01 |
 
 ### Pending Todos
 
@@ -115,10 +120,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-20T02:26:25Z
-Stopped at: Completed 12-03-PLAN.md — Equity chip display in reports (Phase 12 COMPLETE)
-Resume file: .planning/phases/12-equity-price-enrichment/12-03-SUMMARY.md
+Last session: 2026-02-20T12:16:11Z
+Stopped at: Completed 13-01-PLAN.md — Enterprise API health panel and fallback event log on dashboard
+Resume file: .planning/phases/13-admin-dashboard-extensions/13-01-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-20 after 12-03 completion (Phase 12 COMPLETE)*
+*Last updated: 2026-02-20 after 13-01 completion (Phase 13 Plan 01 COMPLETE)*
