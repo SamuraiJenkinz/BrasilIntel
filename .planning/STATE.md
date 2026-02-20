@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Senior management at Marsh Brasil receives actionable intelligence reports on their monitored insurers daily, with zero manual effort.
-**Current focus:** v1.1 Enterprise API Integration — Phase 12: COMPLETE, Phase 13 next
+**Current focus:** v1.1 Enterprise API Integration — Phase 12: COMPLETE, Phase 13 (Admin Dashboard Extensions) next
 
 ## Current Position
 
-Phase: 12 of 15 (Equity Price Enrichment) — COMPLETE
+Phase: 12 of 14 (Equity Price Enrichment) — COMPLETE
 Plan: 3 of 3 complete
 Status: Phase complete
 Last activity: 2026-02-20 — Completed 12-03-PLAN.md (Equity chip display in reports)
 
-Progress: v1.0 [##########] 100% | v1.1 [#########.] 90%
+Progress: v1.0 [##########] 100% | v1.1 [######▪...] 67%
 
 ## Performance Metrics
 
@@ -93,6 +93,8 @@ v1.1 decisions:
 | R$ Brazilian Real format | Equity chips show R$ not $ — matches local currency for B3 Brazilian insurers | 12-03 |
 | Inline-block layout | Single equity chip uses inline-block not table — simpler markup, email-safe | 12-03 |
 | Chip placement | Equity chips between insurer name and code badges — visual hierarchy: Name → Price → Codes → News | 12-03 |
+| Stay with Graph API | Enterprise email delivery removed — Graph API sufficient, no MMC email port needed | Pre-13 |
+| Phase renumber | Old Phase 13 (Enterprise Email) removed, 14→13 (Admin Dashboard), 15→14 (Apify Cleanup) | Pre-13 |
 
 ### Pending Todos
 
@@ -102,9 +104,10 @@ None.
 
 - **ACTION REQUIRED before Phase 12 testing:** Staging MMC credentials must be added to .env and validated with `python scripts/test_auth.py` (Phase 9) and `python scripts/test_factiva.py` (Phase 10)
 - **Phase 12 COMPLETE:** Equity enrichment end-to-end ready — pipeline enrichment (12-01), admin UI (12-02), report display (12-03)
+- **Enterprise Email Delivery REMOVED:** Staying with Graph API for email delivery — Phase 13 removed, phases renumbered
 - **Email visual QA recommended:** Equity chips use inline styles for Outlook/Gmail compatibility, but real email client testing needed before production deployment
 - First production run will validate complete pipeline: Factiva → matcher → classifier → equity enrichment → report delivery
-- Sentinel insurer may accumulate noise — Phase 13 admin dashboard should provide filtering/hiding
+- Sentinel insurer may accumulate noise — admin dashboard should provide filtering/hiding
 - 3-insurer cap may be restrictive for industry-wide news — monitor in production
 - AI matching costs will increase with Factiva volume — ApiEvent monitoring critical for Phase 13
 - Old ScraperService functions remain unused (technical debt) — remove in future cleanup phase

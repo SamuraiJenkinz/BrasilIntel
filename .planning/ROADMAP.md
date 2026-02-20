@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** - Phases 1-8 (shipped 2026-02-05)
-- 🚧 **v1.1 Enterprise API Integration** - Phases 9-15 (in progress)
+- 🚧 **v1.1 Enterprise API Integration** - Phases 9-14 (in progress)
 
 ## Phases
 
@@ -22,7 +22,7 @@ Phases 1-8 delivered: data foundation, vertical slice validation, 6-source news 
 
 ### 🚧 v1.1 Enterprise API Integration (In Progress)
 
-**Milestone Goal:** Replace Apify web scraping with Factiva/Dow Jones as the sole news source, add inline equity price data for tracked Brazilian insurance companies, and switch to MMC Core API enterprise email delivery — porting the proven enterprise integration patterns from MDInsights into BrasilIntel.
+**Milestone Goal:** Replace Apify web scraping with Factiva/Dow Jones as the sole news source, add inline equity price data for tracked Brazilian insurance companies, extend admin dashboard with enterprise API visibility, and clean up legacy Apify infrastructure — porting the proven enterprise integration patterns from MDInsights into BrasilIntel.
 
 ---
 
@@ -94,45 +94,26 @@ Plans:
 - [x] 12-02-PLAN.md — Admin ticker CRUD routes, equity.html template, sidebar nav, seed defaults
 - [x] 12-03-PLAN.md — Report equity chip display (email-compatible inline styles in report_professional.html)
 
-#### Phase 13: Enterprise Email Delivery
+#### Phase 13: Admin Dashboard Extensions
 
-**Goal**: Reports are delivered via MMC Core API enterprise email as the primary path, with automatic Graph API fallback, PDF attachments, and delivery method tracking on each run record
-**Depends on**: Phase 9
-**Requirements**: EEML-01, EEML-02, EEML-03, EEML-04, EEML-05
-**Success Criteria** (what must be TRUE):
-  1. After a pipeline run, reports are sent via the MMC Core API Email endpoint using JWT Bearer + X-Api-Key authentication
-  2. PDF attachments are included in enterprise email delivery, matching the behavior of the existing Graph API path
-  3. When enterprise email delivery fails for a category, the system automatically retries using the existing Graph API emailer — no manual intervention required
-  4. Each run record in the database records which delivery method was used (enterprise, Graph fallback, or failed) so the admin can see what happened
-**Plans**: TBD
-
-Plans:
-- [ ] 13-01: EnterpriseEmailer — MMC Core API Email endpoint wrapper, JWT + X-Api-Key auth, PDF attachment handling
-- [ ] 13-02: Delivery orchestration — primary/fallback routing, run record delivery_method tracking
-- [ ] 13-03: Pipeline emailer integration — wire EnterpriseEmailer as primary, existing GraphEmailService as fallback
-
-#### Phase 14: Admin Dashboard Extensions
-
-**Goal**: The admin dashboard surfaces enterprise API health, exposes credential and query configuration, provides ticker CRUD, shows fallback history, and labels Factiva-sourced articles
-**Depends on**: Phase 9, Phase 12, Phase 13
-**Requirements**: ADMN-17, ADMN-18, ADMN-19, ADMN-20, ADMN-21, ADMN-22
+**Goal**: The admin dashboard surfaces enterprise API health, exposes credential and query configuration, and labels Factiva-sourced articles
+**Depends on**: Phase 9, Phase 12
+**Requirements**: ADMN-17, ADMN-18, ADMN-19, ADMN-20, ADMN-22
 **Success Criteria** (what must be TRUE):
   1. Dashboard home page shows an enterprise API health panel with current auth status, API connectivity indicator, and timestamps of last successful and failed requests
   2. Admin can enter and save MMC Core API credentials (API key, client ID, client secret) through a settings page without editing environment variables
   3. Admin can configure Factiva query parameters (industry codes, Portuguese keywords, date range) through a dedicated page that immediately affects the next pipeline run
   4. Admin can add, edit, and delete equity ticker mappings through the dedicated tickers page (CRUD operations persist to database)
-  5. Dashboard shows a fallback event log listing each instance where delivery fell back from enterprise email to Graph API, with timestamp and reason
-  6. Article listings in the admin show a "Factiva" source badge on articles collected from Factiva
+  5. Article listings in the admin show a "Factiva" source badge on articles collected from Factiva
 **Plans**: TBD
 
 Plans:
-- [ ] 14-01: Enterprise API health panel — auth status widget, connectivity check, last success/failure display on dashboard
-- [ ] 14-02: Credentials settings page — MMC Core API key/client ID/secret form, persist to DB (FactivaConfig model)
-- [ ] 14-03: Factiva query config page — industry codes, keywords, date range form, persist to DB
-- [ ] 14-04: Fallback event log — query api_events for fallback entries, display in dashboard with filter
-- [ ] 14-05: Article source badge — "Factiva" label in article listings, HTMX partial update
+- [ ] 13-01: Enterprise API health panel — auth status widget, connectivity check, last success/failure display on dashboard
+- [ ] 13-02: Credentials settings page — MMC Core API key/client ID/secret form, persist to DB (FactivaConfig model)
+- [ ] 13-03: Factiva query config page — industry codes, keywords, date range form, persist to DB
+- [ ] 13-04: Article source badge — "Factiva" label in article listings, HTMX partial update
 
-#### Phase 15: Apify Cleanup
+#### Phase 14: Apify Cleanup
 
 **Goal**: All Apify scraping infrastructure is removed from the codebase and the project reflects Factiva as the only news collection mechanism
 **Depends on**: Phase 11 (Factiva pipeline confirmed working)
@@ -145,14 +126,14 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 15-01: Remove Apify source classes, base class, and __init__ registrations; remove apify-client and feedparser from requirements.txt
-- [ ] 15-02: Scrub pipeline of Apify branching; update .env.example and documentation
+- [ ] 14-01: Remove Apify source classes, base class, and __init__ registrations; remove apify-client and feedparser from requirements.txt
+- [ ] 14-02: Scrub pipeline of Apify branching; update .env.example and documentation
 
 ---
 
 ## Progress
 
-**Execution Order:** 9 → 10 → 11 → 12 → 13 → 14 → 15
+**Execution Order:** 9 → 10 → 11 → 12 → 13 → 14
 Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize with Phase 10/11 if desired, but sequential execution is the default.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -169,6 +150,5 @@ Note: Phase 12 depends only on Phase 9 (not Phase 10/11) and may parallelize wit
 | 10. Factiva News Collection | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 11. Insurer Matching Pipeline | v1.1 | 3/3 | Complete | 2026-02-19 |
 | 12. Equity Price Enrichment | v1.1 | 3/3 | Complete | 2026-02-19 |
-| 13. Enterprise Email Delivery | v1.1 | 0/3 | Not started | - |
-| 14. Admin Dashboard Extensions | v1.1 | 0/5 | Not started | - |
-| 15. Apify Cleanup | v1.1 | 0/2 | Not started | - |
+| 13. Admin Dashboard Extensions | v1.1 | 0/4 | Not started | - |
+| 14. Apify Cleanup | v1.1 | 0/2 | Not started | - |
