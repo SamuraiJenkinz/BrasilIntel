@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 
 ## Current Position
 
-Phase: 13 of 14 (Admin Dashboard Extensions) — COMPLETE
-Plan: 3 of 3 complete (13-01, 13-02, 13-03)
-Status: Phase complete
-Last activity: 2026-02-20 — Completed 13-02-PLAN.md (Enterprise Config & Factiva Config pages)
+Phase: 14 of 14 (Apify Cleanup) — IN PROGRESS
+Plan: 1 of 2 complete (14-01)
+Status: In progress
+Last activity: 2026-02-20 — Completed 14-01-PLAN.md (Delete Apify files and dependencies)
 
-Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
+Progress: v1.0 [##########] 100% | v1.1 [#########.] 90%
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
 - Total execution time: ~7.0 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 15
-- Average duration: 6.7 min
-- Total execution time: 100 min
+- Total plans completed: 16
+- Average duration: 6.4 min
+- Total execution time: 102 min
 
 **By Phase (v1.1):**
 
@@ -37,6 +37,7 @@ Progress: v1.0 [##########] 100% | v1.1 [########..] 80%
 | 11. Insurer Matching Pipeline | 3/3 COMPLETE | 17 min | 5.7 min |
 | 12. Equity Price Enrichment | 3/3 COMPLETE | 29 min | 9.7 min |
 | 13. Admin Dashboard Extensions | 3/3 COMPLETE | 12 min | 4.0 min |
+| 14. Apify Cleanup | 1/2 IN PROGRESS | 2 min | 2.0 min |
 
 *Updated after each plan completion*
 
@@ -109,6 +110,9 @@ v1.1 decisions:
 | Settings cache clear | get_settings.cache_clear() after .env write — pipeline reads fresh credentials on next run | 13-02 |
 | 48-hour date range default | Factiva date_range_hours default=48 — matches existing hardcoded timedelta(days=2) behavior | 13-02 |
 | Single Factiva config row | FactivaConfig id=1 is active configuration — simple, no multi-config complexity | 13-02 |
+| Delete entire sources/ directory | All 9 Apify source class files removed atomically — prevents partial deletion state | 14-01 |
+| Preserve aiohttp | aiohttp>=3.9.0 kept despite Phase 3 origin — used by FactivaCollector | 14-01 |
+| Clean orphaned comments | Removed Phase 2/3 comments for deleted dependencies — prevents misleading documentation | 14-01 |
 
 ### Pending Todos
 
@@ -119,21 +123,22 @@ None.
 - **ACTION REQUIRED before production deployment:** Run `python scripts/migrate_008_factiva_date_range.py` to add date_range_hours column
 - **ACTION REQUIRED before Phase 13 testing:** Staging MMC credentials can now be added via Enterprise Config page at `/admin/enterprise-config`
 - **Phase 13 COMPLETE:** All admin dashboard extensions ready — health panel (13-01), credential/config forms (13-02), Factiva badges (13-03)
+- **Phase 14-01 COMPLETE:** All Apify source files and dead services deleted (14 files, 2,584 lines removed)
 - **Enterprise Email Delivery REMOVED:** Staying with Graph API for email delivery — enterprise email phase removed, phases renumbered
 - **Email visual QA recommended:** Both equity chips AND Factiva badges use inline styles for Outlook/Gmail compatibility — real email client testing needed before production deployment
 - First production run will validate complete pipeline: Factiva → matcher → classifier → equity enrichment → report delivery with badges
 - Sentinel insurer may accumulate noise — admin dashboard should provide filtering/hiding
 - 3-insurer cap may be restrictive for industry-wide news — monitor in production
 - AI matching costs will increase with Factiva volume — ApiEvent monitoring critical
-- Old ScraperService functions remain unused (technical debt) — remove in future cleanup phase
+- **Remaining Apify cleanup:** Config references in database/env files, dead models/schemas (Phase 14-02)
 - Windows Long Path error with msgraph-sdk on `pip install -r requirements.txt` — pre-existing, not caused by Phase 9
 
 ## Session Continuity
 
-Last session: 2026-02-20T12:25:00Z
-Stopped at: Completed 13-02-PLAN.md — Enterprise Config & Factiva Config pages with date range
-Resume file: .planning/phases/13-admin-dashboard-extensions/13-02-SUMMARY.md
+Last session: 2026-02-20T12:29:34Z
+Stopped at: Completed 14-01-PLAN.md — Delete Apify files and dependencies
+Resume file: .planning/phases/14-apify-cleanup/14-01-SUMMARY.md
 
 ---
 *Initialized: 2026-02-04*
-*Last updated: 2026-02-20 after 13-02 completion (Phase 13: COMPLETE — 3/3 plans)*
+*Last updated: 2026-02-20 after 14-01 completion (Phase 14: IN PROGRESS — 1/2 plans)*
