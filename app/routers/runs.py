@@ -18,7 +18,10 @@ from app.dependencies import get_db
 from app.models.run import Run
 from app.models.news_item import NewsItem
 from app.models.insurer import Insurer
-from app.services.scraper import ApifyScraperService, ScraperService
+from app.models.factiva_config import FactivaConfig
+from app.collectors.factiva import FactivaCollector
+from app.services.deduplicator import ArticleDeduplicator
+from app.services.insurer_matcher import InsurerMatcher
 from app.services.classifier import ClassificationService
 from app.services.emailer import GraphEmailService
 from app.services.reporter import ReportService
@@ -69,12 +72,15 @@ async def execute_run(
     db: Session = Depends(get_db),
 ) -> ExecuteResponse:
     """
-    Execute a scraping run.
+    Execute a Factiva pipeline run.
 
-    Supports two modes:
-    - Single insurer: Provide insurer_id or process_all=False (uses first enabled)
-    - Full category: Set process_all=True to process all insurers in category
+    All runs now use batch Factiva collection + insurer matching.
+    The insurer_id parameter is deprecated (batch collection doesn't filter by insurer).
     """
+    # Deprecation warning for insurer_id
+    if request.insurer_id:
+        logger.warning(f"insurer_id parameter is deprecated in Factiva mode (was {request.insurer_id})")
+
     # Create run record
     run = Run(
         category=request.category,
@@ -86,18 +92,10 @@ async def execute_run(
     db.commit()
     db.refresh(run)
 
-    logger.info(f"Starting run {run.id} for category {request.category}")
+    logger.info(f"Starting Factiva pipeline run {run.id} for category {request.category}")
 
     try:
-        if request.process_all:
-            # Phase 3: Process all insurers in category
-            return await _execute_category_run(request, run, db)
-        elif request.insurer_id:
-            # Specific insurer
-            return await _execute_single_insurer_run(request, run, db)
-        else:
-            # First enabled insurer (Phase 2 behavior)
-            return await _execute_single_insurer_run(request, run, db)
+        return await _execute_factiva_pipeline(request, run, db)
 
     except Exception as e:
         logger.error(f"Run {run.id} failed: {e}")
@@ -106,6 +104,175 @@ async def execute_run(
         run.error_message = str(e)
         db.commit()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _execute_factiva_pipeline(
+    request: ExecuteRequest,
+    run: Run,
+    db: Session,
+) -> ExecuteResponse:
+    """Execute Factiva batch collection + matching + classification pipeline."""
+    # Load FactivaConfig from DB
+    factiva_config = db.query(FactivaConfig).filter(FactivaConfig.id == 1).first()
+    if not factiva_config or not factiva_config.enabled:
+        raise HTTPException(
+            status_code=503,
+            detail="Factiva collection is disabled or not configured"
+        )
+
+    query_params = {
+        "industry_codes": factiva_config.industry_codes,
+        "company_codes": factiva_config.company_codes,
+        "keywords": factiva_config.keywords,
+        "page_size": factiva_config.page_size,
+    }
+
+    # Collect articles from Factiva
+    collector = FactivaCollector()
+    if not collector.is_configured():
+        raise HTTPException(
+            status_code=503,
+            detail="MMC API key not configured — cannot collect from Factiva"
+        )
+
+    logger.info(f"Collecting articles from Factiva for category {request.category}...")
+    articles = collector.collect(query_params, run_id=run.id)
+    logger.info(f"Factiva returned {len(articles)} articles")
+
+    # URL deduplication (fast inline check before semantic dedup)
+    seen_urls = set()
+    url_deduped = []
+    for article in articles:
+        url = article.get("source_url", "")
+        if url and url in seen_urls:
+            continue
+        if url:
+            seen_urls.add(url)
+        url_deduped.append(article)
+
+    logger.info(f"URL dedup: {len(articles)} -> {len(url_deduped)}")
+    articles = url_deduped
+
+    # Semantic deduplication
+    logger.info("Running semantic deduplication...")
+    deduplicator = ArticleDeduplicator()
+    articles = deduplicator.deduplicate(articles)
+    logger.info(f"After dedup: {len(articles)} unique articles")
+
+    # Load insurers for matching (filter by category)
+    insurers = db.query(Insurer).filter(
+        Insurer.enabled == True,
+        Insurer.category == request.category
+    ).all()
+    logger.info(f"Loaded {len(insurers)} enabled insurers for category {request.category}")
+
+    # Ensure "General News" sentinel insurer exists for unmatched articles
+    general_insurer = db.query(Insurer).filter(Insurer.ans_code == "000000").first()
+    if not general_insurer:
+        logger.info("Creating 'Noticias Gerais' sentinel insurer for unmatched articles")
+        general_insurer = Insurer(
+            ans_code="000000",
+            name="Noticias Gerais",
+            category=request.category,
+            enabled=True,
+            search_terms=None,
+        )
+        db.add(general_insurer)
+        db.commit()
+        db.refresh(general_insurer)
+
+    # Match articles to insurers
+    logger.info("Matching articles to insurers...")
+    matcher = InsurerMatcher()
+    match_results = matcher.match_batch(articles, insurers, run_id=run.id)
+
+    # Store matched articles + classify
+    logger.info("Storing and classifying articles...")
+    classifier = ClassificationService()
+    items_stored = 0
+    insurers_with_news = set()
+
+    for article, match in zip(articles, match_results):
+        # Determine insurer IDs — use sentinel for unmatched
+        target_ids = match.insurer_ids if match.insurer_ids else [general_insurer.id]
+
+        # Cap at 3 insurers per article to prevent runaway duplication
+        target_ids = target_ids[:3]
+
+        for insurer_id in target_ids:
+            insurer = db.query(Insurer).filter(Insurer.id == insurer_id).first()
+            insurer_name = insurer.name if insurer else "Unknown"
+
+            # Classify
+            classification = classifier.classify_single_news(
+                insurer_name=insurer_name,
+                news_title=article["title"],
+                news_description=article.get("description"),
+            )
+
+            # Create NewsItem
+            news_item = NewsItem(
+                run_id=run.id,
+                insurer_id=insurer_id,
+                title=article["title"],
+                description=article.get("description"),
+                source_url=article.get("source_url"),
+                source_name=article.get("source_name", "Factiva"),
+                published_at=article.get("published_at"),
+                status=classification.status if classification else None,
+                sentiment=classification.sentiment if classification else None,
+                summary="\n".join(classification.summary_bullets) if classification else None,
+                category_indicators=",".join(classification.category_indicators) if classification and classification.category_indicators else None,
+            )
+            db.add(news_item)
+            items_stored += 1
+            insurers_with_news.add(insurer_id)
+
+    db.commit()
+    logger.info(f"Stored {items_stored} news items for {len(insurers_with_news)} insurers")
+
+    # Check for critical alerts and send immediately
+    logger.info("Checking for critical alerts...")
+    alert_service = CriticalAlertService()
+    alert_result = await alert_service.check_and_send_alert(
+        run_id=run.id,
+        category=request.category,
+        db_session=db,
+    )
+    critical_alerts_sent = alert_result.get("critical_count", 0)
+    if critical_alerts_sent > 0:
+        logger.info(f"Critical alert sent for {critical_alerts_sent} insurer(s)")
+
+    # Generate and send report
+    delivery_result = await _generate_and_send_report(
+        request.category, run.id, db, request.send_email
+    )
+
+    # Update run status and delivery tracking
+    run.status = RunStatus.COMPLETED.value
+    run.completed_at = datetime.utcnow()
+    run.insurers_processed = len(insurers_with_news)
+    run.items_found = items_stored
+    run.email_status = delivery_result.get("email_status")
+    run.email_sent_at = datetime.utcnow() if delivery_result.get("email_sent") else None
+    run.email_recipients_count = delivery_result.get("recipients", 0)
+    run.email_error_message = delivery_result.get("error_message")
+    run.pdf_generated = delivery_result.get("pdf_generated", False)
+    run.pdf_size_bytes = delivery_result.get("pdf_size", 0)
+    db.commit()
+
+    return ExecuteResponse(
+        run_id=run.id,
+        status=run.status,
+        insurers_processed=len(insurers_with_news),
+        items_found=items_stored,
+        email_sent=delivery_result.get("email_sent", False),
+        email_status=delivery_result.get("email_status", "pending"),
+        pdf_generated=delivery_result.get("pdf_generated", False),
+        pdf_size_bytes=delivery_result.get("pdf_size", 0),
+        critical_alerts_sent=critical_alerts_sent,
+        message=f"Factiva pipeline processed {len(insurers_with_news)} insurers with {items_stored} news items",
+    )
 
 
 async def _execute_single_insurer_run(
@@ -371,15 +538,14 @@ async def execute_category_run(
     db: Session = Depends(get_db),
 ) -> ExecuteResponse:
     """
-    Execute a full category run (Phase 3 dedicated endpoint).
+    Execute a full category run using Factiva batch collection.
 
-    Processes all insurers in the category using batch processing.
+    Processes all insurers in the category using the Factiva pipeline.
     """
-    # Create execute request with process_all=True
+    # Create execute request
     execute_request = ExecuteRequest(
         category=request.category,
         send_email=request.send_email,
-        process_all=True,
     )
 
     # Create run record
@@ -394,7 +560,7 @@ async def execute_category_run(
     db.refresh(run)
 
     try:
-        return await _execute_category_run(execute_request, run, db)
+        return await _execute_factiva_pipeline(execute_request, run, db)
     except Exception as e:
         run.status = RunStatus.FAILED.value
         run.completed_at = datetime.utcnow()
@@ -573,13 +739,10 @@ def get_run_delivery_status(
 
 @router.get("/health/scraper", tags=["Health"])
 def scraper_health() -> dict:
-    """
-    Check health of all scraper components.
-
-    Returns status of:
-    - All 6 news sources
-    - Batch processor configuration
-    - Relevance scorer
-    """
-    scraper = ScraperService()
-    return scraper.health_check()
+    """Check health of Factiva news collection."""
+    collector = FactivaCollector()
+    return {
+        "status": "ok" if collector.is_configured() else "unconfigured",
+        "source": "factiva",
+        "mmc_api_configured": collector.is_configured(),
+    }
