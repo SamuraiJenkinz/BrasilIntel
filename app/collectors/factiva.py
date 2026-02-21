@@ -26,6 +26,7 @@ Error handling:
 import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 import httpx
 import structlog
@@ -331,7 +332,7 @@ class FactivaCollector:
             httpx.ConnectError: On connection failure (triggers tenacity retry).
             httpx.HTTPStatusError: On 5xx server errors after raise_for_status.
         """
-        url = f"{self.base_url}{self.BASE_ARTICLE_PATH}/{article_id}"
+        url = f"{self.base_url}{self.BASE_ARTICLE_PATH}/{quote(article_id, safe='')}"
         with httpx.Client(timeout=30.0) as client:
             response = client.get(url, headers=self._build_headers())
 
