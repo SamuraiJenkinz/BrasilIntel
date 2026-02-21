@@ -138,10 +138,10 @@ class FactivaCollector:
         if company_codes:
             params["company"] = ",".join(company_codes)
 
-        # Add keywords if provided
+        # Add keywords if provided (joined with OR for broader coverage)
         keywords = [k.strip() for k in keywords_raw.split(",") if k.strip()]
         if keywords:
-            params["query"] = " ".join(keywords)
+            params["query"] = " OR ".join(keywords)
 
         self.logger.info(
             "factiva_search_started",
