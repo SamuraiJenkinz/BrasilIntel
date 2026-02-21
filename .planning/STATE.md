@@ -45,6 +45,12 @@ None.
 - AI matching costs will increase with Factiva volume — ApiEvent monitoring critical
 - Monitor truncation warnings after next daily run to gauge frequency (Quick-001)
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Fix pipeline runtime errors (token overflow + lazy load) | 2026-02-21 | 7f78438 | [001-fix-pipeline-runtime-errors](./quick/001-fix-pipeline-runtime-errors/) |
+
 ## Session Continuity
 
 Last session: 2026-02-21
