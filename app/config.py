@@ -77,10 +77,11 @@ class Settings(BaseSettings):
     # Used for Factiva news (X-Api-Key), equity prices (X-Api-Key),
     # and enterprise email delivery (JWT Bearer + X-Api-Key)
     mmc_api_base_url: str = ""
+    mmc_api_auth_base_url: str = ""  # Auth server (no stg1. prefix); falls back to mmc_api_base_url
     mmc_api_client_id: str = ""
     mmc_api_client_secret: str = ""
     mmc_api_key: str = ""
-    mmc_api_token_path: str = "/coreapi/access-management/v1/token"
+    mmc_api_token_path: str = "/authentication/v1/oauth2/token"
 
     # Enterprise Email Sender (Phase 13 — added now for completeness)
     mmc_sender_email: str = ""    # Enterprise mailbox to send from
@@ -176,6 +177,15 @@ class Settings(BaseSettings):
             },
         }
         return config_map.get(category, {"cron": "0 6 * * *", "enabled": False})
+
+    def get_mmc_auth_base_url(self) -> str:
+        """Get the base URL for Access Management API.
+
+        The auth server (acsap.yaml) does NOT use the stg1. prefix that
+        other MMC APIs use for non-prod. Falls back to mmc_api_base_url
+        if mmc_api_auth_base_url is not set.
+        """
+        return self.mmc_api_auth_base_url or self.mmc_api_base_url
 
     def get_mmc_client_id(self) -> str:
         """Get MMC API client ID, falling back to mmc_api_key.

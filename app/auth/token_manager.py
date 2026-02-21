@@ -7,6 +7,13 @@ grant, caches them in memory, and proactively refreshes tokens before expiry.
 All enterprise API calls that require Bearer token authentication (Email API)
 should call TokenManager.get_token() to obtain a valid JWT.
 
+Auth contract (per acsap.yaml — Access Management API v1.7.0):
+    - Endpoint: POST /authentication/v1/oauth2/token
+    - Auth: HTTP Basic (client_id:client_secret base64-encoded in Authorization header)
+    - Body: application/x-www-form-urlencoded with grant_type=client_credentials
+    - Response: { access_token, token_type: "Bearer", expires_in }
+    - Auth server does NOT use the stg1. prefix that other MMC APIs use for non-prod
+
 Auth event recording:
     Every acquisition, refresh, and failure is recorded to the api_events table
     so the Phase 14 admin dashboard can display real-time auth health status.
@@ -16,6 +23,7 @@ Security contract:
     - Detail strings stored in api_events are JSON-safe and secret-free
     - Credentials are read from Settings at construction time only
 """
+import base64
 import json
 import logging
 import time
@@ -76,7 +84,7 @@ class TokenManager:
 
     def __init__(self):
         settings = get_settings()
-        self._base_url = settings.mmc_api_base_url
+        self._auth_base_url = settings.get_mmc_auth_base_url()
         self._client_id = settings.get_mmc_client_id()
         self._client_secret = settings.mmc_api_client_secret
         self._token_path = settings.mmc_api_token_path
@@ -85,7 +93,7 @@ class TokenManager:
         if not settings.is_mmc_auth_configured():
             logger.warning(
                 "mmc_auth_not_configured",
-                hint="Set MMC_API_BASE_URL, MMC_API_CLIENT_ID, MMC_API_CLIENT_SECRET in .env",
+                hint="Set MMC_API_BASE_URL, MMC_API_KEY, MMC_API_CLIENT_SECRET in .env",
             )
 
     def is_configured(self) -> bool:
@@ -137,11 +145,14 @@ class TokenManager:
         """
         is_refresh = self._token is not None  # True if replacing an existing token
 
-        token_url = f"{self._base_url}{self._token_path}"
+        token_url = f"{self._auth_base_url}{self._token_path}"
+
+        # Per acsap.yaml: Basic auth header with client_id:client_secret
+        credentials = f"{self._client_id}:{self._client_secret}"
+        basic_token = base64.b64encode(credentials.encode()).decode()
+
         payload = {
             "grant_type": "client_credentials",
-            "client_id": self._client_id,
-            "client_secret": self._client_secret,
         }
 
         try:
@@ -149,7 +160,10 @@ class TokenManager:
                 response = await client.post(
                     token_url,
                     data=payload,
-                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    headers={
+                        "Authorization": f"Basic {basic_token}",
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
                 )
 
             if response.status_code == 200:

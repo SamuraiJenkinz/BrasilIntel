@@ -5,11 +5,13 @@ Fetches current equity price data for a given ticker/exchange from the MMC Core
 API equity endpoint. Used by the Phase 12 pipeline enrichment step to attach
 real-time price data to classified articles that mention tracked insurers.
 
-API contract:
-    Price:  GET {base_url}/coreapi/equity-price/v1/price
+API contract (per equity.yaml — Equity Price API v1.1.1):
+    Quote:  GET {base_url}/equity-price/v1/quotes/{tickerSymbol}
+    By exchange: GET {base_url}/equity-price/v1/exchanges/{exchange}/quotes/{tickerSymbol}
             Headers: X-Api-Key: {key}
-            Params:  ticker={ticker}&exchange={exchange}
-            Returns: price data dict with multiple possible field name conventions
+            Returns: { content: { tickerSymbol, exchange, currency, price, change,
+                       percent, priceDetails: {maximumPrice, minimumPrice, openingPrice,
+                       closingPrice}, tradeTime, volume } }
 
 Authentication:
     X-Api-Key header only — same as FactivaCollector, no JWT/Bearer needed.
@@ -44,8 +46,8 @@ class EquityPriceClient:
     MMC Core API equity price client for BrasilIntel.
 
     Fetches current price data for a given ticker symbol and exchange code
-    using the MMC Core API equity price endpoint. Returns a normalized price
-    dict or None on any failure.
+    using the MMC Equity Price API. Returns a normalized price dict or None
+    on any failure.
 
     Modeled exactly on FactivaCollector for consistency:
     - Same httpx + tenacity retry pattern
@@ -59,15 +61,20 @@ class EquityPriceClient:
             price_data = client.get_price("BBSE3", "BVMF", run_id=run_id)
             if price_data:
                 # price_data = {"ticker": "BBSE3", "exchange": "BVMF",
-                #               "price": 45.50, "change": 1.25, "change_pct": 2.82}
+                #               "price": 45.50, "change": 1.25, "change_pct": 2.82,
+                #               "currency": "BRL", "trade_time": "2026-02-20T15:30:00Z",
+                #               "volume": 1234567}
 
-    Response field name fallbacks (API contract not fully confirmed):
-        price:      "price" | "lastPrice" | "last"
-        change:     "change" | "priceChange" | "netChange"
-        change_pct: "changePct" | "percentChange" | "pctChange"
+    Response structure (per equity.yaml):
+        { content: { tickerSymbol, exchange, currency, price, change, percent,
+                     priceDetails: {maximumPrice, minimumPrice, openingPrice, closingPrice},
+                     tradeTime, volume } }
     """
 
-    BASE_PRICE_PATH = "/coreapi/equity-price/v1/price"
+    # Per equity.yaml: /equity-price/v1/quotes/{tickerSymbol}
+    BASE_QUOTE_PATH = "/equity-price/v1/quotes"
+    # Per equity.yaml: /equity-price/v1/exchanges/{exchange}/quotes/{tickerSymbol}
+    BASE_EXCHANGE_QUOTE_PATH = "/equity-price/v1/exchanges"
 
     def __init__(self) -> None:
         settings = get_settings()
@@ -118,23 +125,15 @@ class EquityPriceClient:
                 )
                 return None
 
-            # Extract price fields with multiple field name fallbacks
-            # The exact field names from the MMC equity API are not yet confirmed
-            price = (
-                response_data.get("price")
-                or response_data.get("lastPrice")
-                or response_data.get("last")
-            )
-            change = (
-                response_data.get("change")
-                or response_data.get("priceChange")
-                or response_data.get("netChange")
-            )
-            change_pct = (
-                response_data.get("changePct")
-                or response_data.get("percentChange")
-                or response_data.get("pctChange")
-            )
+            # Per equity.yaml: response is { content: { tickerSymbol, exchange, ... } }
+            content = response_data.get("content", response_data)
+
+            price = content.get("price")
+            change = content.get("change")
+            change_pct = content.get("percent")
+            currency = content.get("currency")
+            trade_time = content.get("tradeTime")
+            volume = content.get("volume")
 
             self.logger.info(
                 "equity_price_fetched",
@@ -152,10 +151,13 @@ class EquityPriceClient:
 
             return {
                 "ticker": ticker,
-                "exchange": exchange,
+                "exchange": content.get("exchange", exchange),
                 "price": price,
                 "change": change,
                 "change_pct": change_pct,
+                "currency": currency,
+                "trade_time": trade_time,
+                "volume": volume,
             }
 
         except Exception as exc:
@@ -204,6 +206,10 @@ class EquityPriceClient:
         """
         Execute equity price API call with tenacity retry.
 
+        Per equity.yaml:
+        - Any exchange: GET /equity-price/v1/quotes/{tickerSymbol}
+        - Specific exchange: GET /equity-price/v1/exchanges/{exchange}/quotes/{tickerSymbol}
+
         Returns None on 4xx client errors so the caller can record a failed event
         and return None to its caller — same pattern as FactivaCollector._fetch_article.
 
@@ -220,11 +226,14 @@ class EquityPriceClient:
             httpx.ConnectError: On connection failure (triggers tenacity retry).
             httpx.HTTPStatusError: On 5xx server errors after raise_for_status.
         """
-        url = f"{self.base_url}{self.BASE_PRICE_PATH}"
-        params = {"ticker": ticker, "exchange": exchange}
+        # Use exchange-specific endpoint when exchange is provided
+        if exchange:
+            url = f"{self.base_url}{self.BASE_EXCHANGE_QUOTE_PATH}/{exchange}/quotes/{ticker}"
+        else:
+            url = f"{self.base_url}{self.BASE_QUOTE_PATH}/{ticker}"
 
         with httpx.Client(timeout=30.0) as client:
-            response = client.get(url, params=params, headers=self._build_headers())
+            response = client.get(url, headers=self._build_headers())
 
             # 4xx = ticker not found, unauthorized, bad request
             # Log warning and return None so caller uses graceful fallback

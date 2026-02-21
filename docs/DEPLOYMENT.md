@@ -392,7 +392,8 @@ Unregister-ScheduledTask -TaskName "BrasilIntel_WebServer" -Confirm:$false
 | `MMC_API_CLIENT_ID` | No* | - | OAuth2 client ID |
 | `MMC_API_CLIENT_SECRET` | No* | - | OAuth2 client secret |
 | `MMC_API_KEY` | No* | - | X-Api-Key for data endpoints |
-| `MMC_API_TOKEN_PATH` | No | `/coreapi/access-management/v1/token` | Token endpoint path |
+| `MMC_API_AUTH_BASE_URL` | No | (falls back to `MMC_API_BASE_URL`) | Auth server URL (no stg1. prefix) |
+| `MMC_API_TOKEN_PATH` | No | `/authentication/v1/oauth2/token` | Token endpoint path |
 
 > *Required for Factiva news collection and equity price enrichment. When not configured, enterprise features are skipped gracefully.
 
