@@ -11,6 +11,7 @@ from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import set_committed_value
 
 from app.config import get_settings
 from app.models.insurer import Insurer
@@ -81,10 +82,12 @@ class CriticalAlertService:
             .all()
         )
 
-        # Override each insurer's news_items with only Critical items from this run.
-        # No expunge — we never commit, so ORM tracking is harmless.
+        # Load only Critical items from this run for each insurer.
+        # Use set_committed_value to avoid ORM change tracking — a plain
+        # assignment would cause SQLAlchemy to NULL out insurer_id on the
+        # old items when the session commits later in the pipeline.
         for insurer in critical_insurers:
-            insurer.news_items = (
+            critical_items = (
                 db_session.query(NewsItem)
                 .filter(
                     NewsItem.insurer_id == insurer.id,
@@ -93,6 +96,7 @@ class CriticalAlertService:
                 )
                 .all()
             )
+            set_committed_value(insurer, "news_items", critical_items)
 
         logger.info(f"Found {len(critical_insurers)} critical insurers for run {run_id}")
         return critical_insurers

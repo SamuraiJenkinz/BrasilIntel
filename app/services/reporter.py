@@ -13,6 +13,7 @@ from typing import Optional, Tuple
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import set_committed_value
 
 from app.config import get_settings
 from app.models.insurer import Insurer
@@ -196,10 +197,12 @@ class ReportService:
             .all()
         )
 
-        # Override each insurer's news_items with only items from this run.
-        # No expunge needed — we never commit, so ORM tracking is harmless.
+        # Load only this run's news items for each insurer.
+        # Use set_committed_value to avoid ORM change tracking — a plain
+        # assignment would cause SQLAlchemy to NULL out insurer_id on the
+        # old items when the session commits later in the pipeline.
         for insurer in insurers:
-            insurer.news_items = (
+            run_items = (
                 db_session.query(NewsItem)
                 .filter(
                     NewsItem.insurer_id == insurer.id,
@@ -207,6 +210,7 @@ class ReportService:
                 )
                 .all()
             )
+            set_committed_value(insurer, "news_items", run_items)
 
         return self.generate_report(
             category=category,
@@ -454,10 +458,12 @@ class ReportService:
             .all()
         )
 
-        # Override each insurer's news_items with only items from this run.
-        # No expunge needed — we never commit, so ORM tracking is harmless.
+        # Load only this run's news items for each insurer.
+        # Use set_committed_value to avoid ORM change tracking — a plain
+        # assignment would cause SQLAlchemy to NULL out insurer_id on the
+        # old items when the session commits later in the pipeline.
         for insurer in insurers:
-            insurer.news_items = (
+            run_items = (
                 db_session.query(NewsItem)
                 .filter(
                     NewsItem.insurer_id == insurer.id,
@@ -465,6 +471,7 @@ class ReportService:
                 )
                 .all()
             )
+            set_committed_value(insurer, "news_items", run_items)
 
         return self.generate_professional_report(
             category=category,
